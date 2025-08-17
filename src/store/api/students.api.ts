@@ -1,4 +1,4 @@
-import { apiBase } from "./base";
+import { apiBase } from "./baseApi";
 import type { Student, ID } from "@/types/domain";
 
 export const studentsApi = apiBase.injectEndpoints({

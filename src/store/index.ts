@@ -1,7 +1,7 @@
 // src/store/index.ts
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
-import { apiBase } from "./api/base";
+import { apiBase } from "./api/baseApi";
 
 // Import slices
 import app from "./slices/app.slice";

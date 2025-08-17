@@ -13,6 +13,9 @@ export async function GET() {
     return NextResponse.json(students);
   } catch (error) {
     console.error("❌ API error in /api/students:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }

@@ -1,6 +1,6 @@
 import { makeStore } from "@/store";
 import { studentsApi } from "@/store/api/students.api";
-import StudentsClient from "./_client";
+import StudentsClient from "./client";
 
 export default async function StudentsPage() {
   // 1. Make store on server
