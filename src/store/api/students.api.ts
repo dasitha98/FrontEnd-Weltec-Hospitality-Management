@@ -4,7 +4,8 @@ import type { Student, ID } from "@/types/domain";
 export const studentsApi = apiBase.injectEndpoints({
   endpoints: (b) => ({
     listStudents: b.query<Student[], void>({
-      query: () => "/students",
+      query: () => "https://jsonplaceholder.typicode.com/users",
+      transformResponse: (response: Student[]) => response.slice(0, 3), // 👈 only first 3
       providesTags: ["Students"],
     }),
     getStudent: b.query<Student, ID>({
