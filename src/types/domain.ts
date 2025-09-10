@@ -71,3 +71,28 @@ export interface RecipeIngredient {
   notes?: string;
   cost?: number;
 }
+
+export interface User {
+  id: ID;
+  name: string;
+  email: string;
+  address: string;
+  contactNo: string;
+  password: string;
+  role: "admin" | "instructor" | "student";
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Supplier {
+  id: ID;
+  name: string;
+  salesRepName: string;
+  address: string;
+  contactNo: string;
+  email: string;
+  notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
