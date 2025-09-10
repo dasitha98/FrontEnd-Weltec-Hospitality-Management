@@ -11,7 +11,7 @@ import {
   FaUtensils,
 } from "react-icons/fa";
 import type { Recipe, RecipeIngredient } from "@/types/domain";
-import RecipeDialog from "@/app/components/dialogboxes/RecipeDialog";
+import { RecipeDialog } from "@/app/components/dialogboxes/dialog";
 
 // Mock data for demonstration
 const mockRecipes: Recipe[] = [
@@ -250,16 +250,17 @@ export default function Recipe() {
     setIsDialogOpen(true);
   };
 
+  const handleClose = () => {
+    setEditingRecipe(null);
+    setIsDialogOpen(false);
+  };
+
   const handleDelete = (id: string) => {
     if (confirm("Are you sure you want to delete this recipe?")) {
       setRecipes((prev) => prev.filter((recipe) => recipe.id !== id));
     }
   };
 
-  const handleClose = () => {
-    setEditingRecipe(null);
-    setIsDialogOpen(false);
-  };
 
   const filteredRecipes = recipes.filter(
     (recipe) =>

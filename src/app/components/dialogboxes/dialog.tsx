@@ -3,7 +3,8 @@
 import React, { useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
 import AddIngredientForm from "../forms/AddIngredientForm";
-import type { Ingredient } from "@/types/domain";
+import AddRecipeForm from "../forms/AddRecipeForm";
+import type { Ingredient, Recipe } from "@/types/domain";
 
 // Base Dialog Component
 interface BaseDialogProps {
@@ -61,7 +62,7 @@ function BaseDialog({
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+        className="fixed inset-0 backdrop-blur-lg transition-opacity"
         onClick={handleBackdropClick}
       />
 
@@ -99,7 +100,8 @@ interface IngredientDialogProps {
   isEditing?: boolean;
 }
 
-export default function IngredientDialog({
+// Ingredient Dialog Component
+export function IngredientDialog({
   isOpen,
   onClose,
   onSubmit,
@@ -134,3 +136,51 @@ export default function IngredientDialog({
     </BaseDialog>
   );
 }
+
+// Recipe Dialog Component
+interface RecipeDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (data: Omit<Recipe, "id">) => void;
+  initialData?: Partial<Recipe>;
+  isEditing?: boolean;
+}
+
+export function RecipeDialog({
+  isOpen,
+  onClose,
+  onSubmit,
+  initialData,
+  isEditing = false,
+}: RecipeDialogProps) {
+  const handleSubmit = (data: Omit<Recipe, "id">) => {
+    onSubmit(data);
+    onClose();
+  };
+
+  const handleCancel = () => {
+    onClose();
+  };
+
+  return (
+    <BaseDialog
+      isOpen={isOpen}
+      onClose={onClose}
+      title={isEditing ? "Edit Recipe" : "Add New Recipe"}
+      size="2xl"
+      closeOnBackdropClick={false}
+    >
+      <AddRecipeForm
+        onSubmit={handleSubmit}
+        onCancel={handleCancel}
+        initialData={initialData}
+        isEditing={isEditing}
+        submitButtonText={isEditing ? "Update Recipe" : "Add Recipe"}
+        cancelButtonText="Cancel"
+      />
+    </BaseDialog>
+  );
+}
+
+// Default export for backward compatibility
+export default IngredientDialog;
