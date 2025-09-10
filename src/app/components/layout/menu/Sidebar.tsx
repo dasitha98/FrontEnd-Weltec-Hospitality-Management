@@ -13,6 +13,12 @@ import Link from "next/link";
 export default function Sidebar() {
   const SidebarData = [
     {
+      title: "Home",
+      path: "/",
+      icon: <AiIcons.AiFillFire />,
+      name: "nav-text",
+    },
+    {
       title: "Ingredients",
       path: "/ingredients",
       icon: <AiIcons.AiFillFire />,
@@ -32,13 +38,13 @@ export default function Sidebar() {
     },
     {
       title: "Supplier",
-      path: "/",
+      path: "/suppliers",
       icon: <AiIcons.AiFillFire />,
       name: "nav-text",
     },
     {
       title: "Users",
-      path: "/",
+      path: "/users",
       icon: <FaUsers />,
       name: "nav-text",
     },
