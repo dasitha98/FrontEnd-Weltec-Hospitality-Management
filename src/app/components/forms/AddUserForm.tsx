@@ -114,7 +114,7 @@ export default function AddUserForm({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full">
+    <div className="bg-white rounded-lg shadow-xl w-full">
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-gray-200">
         <div>
@@ -307,3 +307,4 @@ export default function AddUserForm({
     </div>
   );
 }
+

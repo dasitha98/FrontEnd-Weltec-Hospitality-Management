@@ -34,8 +34,13 @@ export default function RootLayout({
           <div className="side-bar">
             <Sidebar />
           </div>
-          <div className="content">
-            <StoreProvider>{children}</StoreProvider>
+          <div className="main-content">
+            <div className="header bg-blue-600 text-white">
+              School Of Hospitality
+            </div>
+            <div className="content">
+              <StoreProvider>{children}</StoreProvider>
+            </div>
           </div>
         </div>
       </body>
