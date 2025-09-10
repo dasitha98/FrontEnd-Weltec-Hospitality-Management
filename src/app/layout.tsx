@@ -34,7 +34,7 @@ export default function RootLayout({
           <div className="side-bar">
             <Sidebar />
           </div>
-          <div>
+          <div className="content">
             <StoreProvider>{children}</StoreProvider>
           </div>
         </div>

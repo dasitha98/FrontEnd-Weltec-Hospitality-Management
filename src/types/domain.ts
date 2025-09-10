@@ -9,9 +9,65 @@ export interface Student {
 export interface Class {
   id: ID;
   name: string;
+  noOfStudents: number;
+  location: string;
+  reference: string;
+  totalCost: number;
+  description?: string;
+  instructor?: string;
+  startDate?: string;
+  endDate?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Food {
   id: ID;
   name: string;
+}
+
+export interface Ingredient {
+  id: ID;
+  name: string;
+  category: string;
+  unit: string;
+  quantity: number;
+  description?: string;
+  supplier?: string;
+  cost?: number;
+  expiryDate?: string;
+}
+
+export interface Recipe {
+  id: ID;
+  name: string;
+  description?: string;
+  reference?: string;
+  category: string;
+  prepTime: number; // in minutes
+  cookTime: number; // in minutes
+  servings: number;
+  difficulty: "Easy" | "Medium" | "Hard";
+  ingredients: RecipeIngredient[];
+  instructions: string[];
+  nutritionInfo?: {
+    calories?: number;
+    protein?: number;
+    carbs?: number;
+    fat?: number;
+  };
+  tags?: string[];
+  imageUrl?: string;
+  createdBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface RecipeIngredient {
+  ingredientId: string;
+  ingredientName: string;
+  quantity: number;
+  unit: string;
+  notes?: string;
+  cost?: number;
 }
