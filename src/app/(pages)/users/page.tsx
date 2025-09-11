@@ -155,7 +155,7 @@ export default function Users() {
   };
 
   return (
-    <div className="p-15">
+    <div className="p-14">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -190,25 +190,25 @@ export default function Users() {
       {/* Users Table */}
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+          <table className="min-w-full divide-y divide-gray-200 border border-gray-300">
             <thead className="bg-blue-600">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Email
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Address
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Contact No
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Role
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
@@ -220,9 +220,11 @@ export default function Users() {
               {filteredUsers.map((user, index) => (
                 <tr
                   key={user.id}
-                  className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}
+                  className={`h-16 ${
+                    index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                  }`}
                 >
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="flex items-center">
                       <FaUser className="mr-2 text-gray-400" size={14} />
                       <div className="text-sm font-medium text-gray-900">
@@ -230,13 +232,13 @@ export default function Users() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="flex items-center">
                       <FaEnvelope className="mr-2 text-gray-400" size={14} />
                       <div className="text-sm text-gray-900">{user.email}</div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="flex items-center">
                       <FaMapMarkerAlt
                         className="mr-2 text-gray-400"
@@ -247,7 +249,7 @@ export default function Users() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="flex items-center">
                       <FaPhone className="mr-2 text-gray-400" size={14} />
                       <div className="text-sm text-gray-900">
@@ -255,7 +257,7 @@ export default function Users() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(
                         user.role
@@ -265,7 +267,7 @@ export default function Users() {
                       {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="flex items-center">
                       {user.isActive ? (
                         <FaToggleOn className="text-green-500" size={16} />

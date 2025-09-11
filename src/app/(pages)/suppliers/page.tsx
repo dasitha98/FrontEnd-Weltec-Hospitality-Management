@@ -135,7 +135,7 @@ export default function Suppliers() {
   );
 
   return (
-    <div className="p-15">
+    <div className="p-14">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -171,25 +171,25 @@ export default function Suppliers() {
       {/* Suppliers Table */}
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+          <table className="min-w-full divide-y divide-gray-200 border border-gray-300">
             <thead className="bg-blue-600">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Supplier Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Sales Rep
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Address
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Contact No
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Email
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Notes
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
@@ -201,9 +201,11 @@ export default function Suppliers() {
               {filteredSuppliers.map((supplier, index) => (
                 <tr
                   key={supplier.id}
-                  className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}
+                  className={`h-16 ${
+                    index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                  }`}
                 >
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="flex items-center">
                       <FaBuilding className="mr-2 text-gray-400" size={14} />
                       <div className="text-sm font-medium text-gray-900">
@@ -211,12 +213,12 @@ export default function Suppliers() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="text-sm text-gray-900">
                       {supplier.salesRepName}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="flex items-center">
                       <FaMapMarkerAlt
                         className="mr-2 text-gray-400"
@@ -227,7 +229,7 @@ export default function Suppliers() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="flex items-center">
                       <FaPhone className="mr-2 text-gray-400" size={14} />
                       <div className="text-sm text-gray-900">
@@ -235,7 +237,7 @@ export default function Suppliers() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="flex items-center">
                       <FaEnvelope className="mr-2 text-gray-400" size={14} />
                       <div className="text-sm text-gray-900">
@@ -243,12 +245,12 @@ export default function Suppliers() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 align-middle border-r border-gray-200">
                     <div className="text-sm text-gray-900 max-w-xs truncate">
                       {supplier.notes || "No notes"}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium align-middle">
                     <div className="flex space-x-2">
                       <button
                         onClick={() => handleEdit(supplier)}
