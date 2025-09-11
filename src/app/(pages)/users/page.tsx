@@ -86,6 +86,8 @@ export default function Users() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(8);
 
   const handleSubmit = (data: Omit<User, "id">) => {
     if (editingUser) {
@@ -141,6 +143,22 @@ export default function Users() {
       user.role.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentUsers = filteredUsers.slice(startIndex, endIndex);
+  const emptyRowsCount = Math.max(0, itemsPerPage - currentUsers.length);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
   const getRoleColor = (role: string) => {
     switch (role) {
       case "admin":
@@ -156,6 +174,11 @@ export default function Users() {
 
   return (
     <div className="p-14">
+      <style jsx>{`
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -174,7 +197,7 @@ export default function Users() {
             type="text"
             placeholder="Search users..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
@@ -189,9 +212,12 @@ export default function Users() {
 
       {/* Users Table */}
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
+        <div
+          className="overflow-x-auto hide-scrollbar"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
           <table className="min-w-full divide-y divide-gray-200 border border-gray-300">
-            <thead className="bg-blue-600">
+            <thead className="bg-blue-600 sticky top-0 z-10">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Name
@@ -217,7 +243,7 @@ export default function Users() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredUsers.map((user, index) => (
+              {currentUsers.map((user, index) => (
                 <tr
                   key={user.id}
                   className={`h-16 ${
@@ -303,11 +329,48 @@ export default function Users() {
                   </td>
                 </tr>
               ))}
+
+              {/* Empty rows to fill the table height */}
+              {Array.from({ length: emptyRowsCount }).map((_, index) => (
+                <tr
+                  key={`empty-${index}`}
+                  className={`h-16 ${
+                    (currentUsers.length + index) % 2 === 0
+                      ? "bg-gray-50"
+                      : "bg-white"
+                  }`}
+                >
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
+                    <div className="text-sm text-gray-400">&nbsp;</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
+                    <div className="text-sm text-gray-400">&nbsp;</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
+                    <div className="text-sm text-gray-400">&nbsp;</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
+                    <div className="text-sm text-gray-400">&nbsp;</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
+                    <div className="text-sm text-gray-400">&nbsp;</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
+                    <div className="text-sm text-gray-400">&nbsp;</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex space-x-2">
+                      <div className="w-4 h-4">&nbsp;</div>
+                      <div className="w-4 h-4">&nbsp;</div>
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
 
-        {filteredUsers.length === 0 && (
+        {currentUsers.length === 0 && (
           <div className="text-center py-12">
             <div className="text-gray-500 text-lg mb-2">No users found</div>
             <p className="text-gray-400">
@@ -319,18 +382,73 @@ export default function Users() {
         )}
       </div>
 
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <div className="text-sm text-gray-700">
+            Showing {startIndex + 1} to{" "}
+            {Math.min(endIndex, filteredUsers.length)} of {filteredUsers.length}{" "}
+            results
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+
+            <div className="flex space-x-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`px-3 py-1 text-sm border rounded-md ${
+                      page === currentPage
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                )
+              )}
+            </div>
+
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* User Dialog */}
       {isDialogOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <AddUserForm
-              onSubmit={handleSubmit}
-              onCancel={handleClose}
-              initialData={editingUser || undefined}
-              isEditing={!!editingUser}
-              submitButtonText={editingUser ? "Update User" : "Add User"}
-              cancelButtonText="Cancel"
-            />
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/30 backdrop-blur-lg transition-opacity"
+            onClick={handleClose}
+          />
+
+          {/* Dialog */}
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="relative bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+              <AddUserForm
+                onSubmit={handleSubmit}
+                onCancel={handleClose}
+                initialData={editingUser || undefined}
+                isEditing={!!editingUser}
+                submitButtonText={editingUser ? "Update User" : "Add User"}
+                cancelButtonText="Cancel"
+              />
+            </div>
           </div>
         </div>
       )}

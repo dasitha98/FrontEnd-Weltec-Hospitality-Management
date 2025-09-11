@@ -448,172 +448,170 @@ export default function AddRecipeForm({
 
   return (
     <div className="flex flex-col bg-white">
-      <div className="flex-1 overflow-y-auto p-4 max-h-[80vh]">
+      <div className="flex-1 overflow-y-auto hide-scrollbar p-4 max-h-[80vh]">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* General Recipe Information */}
-          <div className="bg-gray-50 rounded-md p-4">
-            <div className="space-y-4">
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleInputChange("name", e.target.value)}
+                placeholder="Enter recipe name"
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                  errors.name
+                    ? "border-red-500 bg-red-50"
+                    : "border-gray-300 hover:border-gray-400"
+                }`}
+              />
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Description
+              </label>
+              <textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
+                placeholder="Enter recipe description"
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors hover:border-gray-400 resize-none"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label
-                  htmlFor="name"
+                  htmlFor="level"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Name
+                  Level
                 </label>
-                <input
-                  id="name"
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
-                  placeholder="Enter recipe name"
+                <select
+                  id="level"
+                  value={formData.level}
+                  onChange={(e) => handleInputChange("level", e.target.value)}
                   className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                    errors.name
+                    errors.level
                       ? "border-red-500 bg-red-50"
                       : "border-gray-300 hover:border-gray-400"
                   }`}
-                />
-                {errors.name && (
-                  <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                >
+                  <option value="">Select Level</option>
+                  {LEVEL_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                {errors.level && (
+                  <p className="mt-1 text-sm text-red-600">{errors.level}</p>
                 )}
               </div>
 
               <div>
                 <label
-                  htmlFor="description"
+                  htmlFor="year"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Description
+                  Year
                 </label>
-                <textarea
-                  id="description"
-                  value={formData.description}
+                <select
+                  id="year"
+                  value={formData.year}
+                  onChange={(e) => handleInputChange("year", e.target.value)}
+                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                    errors.year
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-300 hover:border-gray-400"
+                  }`}
+                >
+                  <option value="">Select Year</option>
+                  {YEAR_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                {errors.year && (
+                  <p className="mt-1 text-sm text-red-600">{errors.year}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label
+                  htmlFor="reference"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Reference (Base recipe produces)
+                </label>
+                <select
+                  id="reference"
+                  value={formData.reference}
                   onChange={(e) =>
-                    handleInputChange("description", e.target.value)
+                    handleInputChange("reference", e.target.value)
                   }
-                  placeholder="Enter recipe description"
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors hover:border-gray-400 resize-none"
+                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                    errors.reference
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-300 hover:border-gray-400"
+                  }`}
+                >
+                  <option value="">Select Reference</option>
+                  {REFERENCE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                {errors.reference && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.reference}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="yield"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Yield
+                </label>
+                <input
+                  id="yield"
+                  type="number"
+                  min="1"
+                  value={formData.yield}
+                  onChange={(e) => handleInputChange("yield", e.target.value)}
+                  placeholder="1"
+                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                    errors.yield
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-300 hover:border-gray-400"
+                  }`}
                 />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label
-                    htmlFor="level"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Level
-                  </label>
-                  <select
-                    id="level"
-                    value={formData.level}
-                    onChange={(e) => handleInputChange("level", e.target.value)}
-                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                      errors.level
-                        ? "border-red-500 bg-red-50"
-                        : "border-gray-300 hover:border-gray-400"
-                    }`}
-                  >
-                    <option value="">Select Level</option>
-                    {LEVEL_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.level && (
-                    <p className="mt-1 text-sm text-red-600">{errors.level}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="year"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Year
-                  </label>
-                  <select
-                    id="year"
-                    value={formData.year}
-                    onChange={(e) => handleInputChange("year", e.target.value)}
-                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                      errors.year
-                        ? "border-red-500 bg-red-50"
-                        : "border-gray-300 hover:border-gray-400"
-                    }`}
-                  >
-                    <option value="">Select Year</option>
-                    {YEAR_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.year && (
-                    <p className="mt-1 text-sm text-red-600">{errors.year}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label
-                    htmlFor="reference"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Reference (Base recipe produces)
-                  </label>
-                  <select
-                    id="reference"
-                    value={formData.reference}
-                    onChange={(e) =>
-                      handleInputChange("reference", e.target.value)
-                    }
-                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                      errors.reference
-                        ? "border-red-500 bg-red-50"
-                        : "border-gray-300 hover:border-gray-400"
-                    }`}
-                  >
-                    <option value="">Select Reference</option>
-                    {REFERENCE_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.reference && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.reference}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="yield"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Yield
-                  </label>
-                  <input
-                    id="yield"
-                    type="number"
-                    min="1"
-                    value={formData.yield}
-                    onChange={(e) => handleInputChange("yield", e.target.value)}
-                    placeholder="1"
-                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                      errors.yield
-                        ? "border-red-500 bg-red-50"
-                        : "border-gray-300 hover:border-gray-400"
-                    }`}
-                  />
-                  {errors.yield && (
-                    <p className="mt-1 text-sm text-red-600">{errors.yield}</p>
-                  )}
-                </div>
+                {errors.yield && (
+                  <p className="mt-1 text-sm text-red-600">{errors.yield}</p>
+                )}
               </div>
             </div>
           </div>

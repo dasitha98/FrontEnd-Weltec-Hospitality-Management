@@ -373,7 +373,7 @@ export default function AddClassForm({
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto hide-scrollbar p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* General Details Section */}
           <div className="border border-gray-300 rounded-lg p-4">

@@ -59,7 +59,7 @@ function BaseDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div className="fixed inset-0 z-50 overflow-y-auto hide-scrollbar">
       {/* Backdrop */}
       <div
         className="fixed inset-0 backdrop-blur-lg transition-opacity"

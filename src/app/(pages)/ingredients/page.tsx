@@ -49,6 +49,8 @@ export default function Recipe() {
     null
   );
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(8);
 
   const handleSubmit = (data: Omit<Ingredient, "id">) => {
     if (editingIngredient) {
@@ -97,8 +99,29 @@ export default function Recipe() {
       ingredient.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredIngredients.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentIngredients = filteredIngredients.slice(startIndex, endIndex);
+  const emptyRowsCount = Math.max(0, itemsPerPage - currentIngredients.length);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
   return (
     <div className="p-14">
+      <style jsx>{`
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -109,7 +132,6 @@ export default function Recipe() {
           suppliers.
         </p>
       </div>
-      Search and Add Button
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="relative flex-1">
           <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -117,7 +139,7 @@ export default function Recipe() {
             type="text"
             placeholder="Search ingredients..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
@@ -131,36 +153,44 @@ export default function Recipe() {
       </div>
       {/* Ingredients Table */}
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
+        <div
+          className="overflow-x-auto hide-scrollbar"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
           <table className="min-w-full divide-y divide-gray-200 border border-gray-300">
-            <thead className="bg-gray-50">
+            <thead className="bg-blue-600 sticky top-0 z-10">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Ingredient Name
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Description
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Supplier
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Store
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Purchase Cost
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Usage Cost
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                   Action
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredIngredients.map((ingredient) => (
-                <tr key={ingredient.id} className="h-16 hover:bg-gray-50">
+              {currentIngredients.map((ingredient, index) => (
+                <tr
+                  key={ingredient.id}
+                  className={`h-16 ${
+                    index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                  }`}
+                >
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="text-sm font-medium text-gray-900">
                       {ingredient.name}
@@ -205,11 +235,48 @@ export default function Recipe() {
                   </td>
                 </tr>
               ))}
+
+              {/* Empty rows to fill the table height */}
+              {Array.from({ length: emptyRowsCount }).map((_, index) => (
+                <tr
+                  key={`empty-${index}`}
+                  className={`h-16 ${
+                    (currentIngredients.length + index) % 2 === 0
+                      ? "bg-gray-50"
+                      : "bg-white"
+                  }`}
+                >
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
+                    <div className="text-sm text-gray-400">&nbsp;</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
+                    <div className="text-sm text-gray-400">&nbsp;</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
+                    <div className="text-sm text-gray-400">&nbsp;</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
+                    <div className="text-sm text-gray-400">&nbsp;</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
+                    <div className="text-sm text-gray-400">&nbsp;</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
+                    <div className="text-sm text-gray-400">&nbsp;</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium align-middle">
+                    <div className="flex space-x-2">
+                      <div className="w-4 h-4">&nbsp;</div>
+                      <div className="w-4 h-4">&nbsp;</div>
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
 
-        {filteredIngredients.length === 0 && (
+        {currentIngredients.length === 0 && (
           <div className="text-center py-12">
             <div className="text-gray-500 text-lg mb-2">
               No ingredients found
@@ -222,6 +289,51 @@ export default function Recipe() {
           </div>
         )}
       </div>
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-4">
+          <div className="text-sm text-gray-700">
+            Showing {startIndex + 1} to{" "}
+            {Math.min(endIndex, filteredIngredients.length)} of{" "}
+            {filteredIngredients.length} results
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+
+            <div className="flex space-x-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`px-3 py-1 text-sm border rounded-md ${
+                      page === currentPage
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                )
+              )}
+            </div>
+
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
       {/* Ingredient Dialog */}
       <IngredientDialog
         isOpen={isDialogOpen}
