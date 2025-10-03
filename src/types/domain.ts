@@ -86,13 +86,13 @@ export interface User {
 }
 
 export interface Supplier {
-  id: ID;
-  name: string;
-  salesRepName: string;
-  address: string;
-  contactNo: string;
-  email: string;
+  supplierId: string;
+  name?: string;
+  repName?: string;
+  address?: string;
+  contactNumber?: string;
+  email?: string;
   notes?: string;
   createdAt?: string;
-  updatedAt?: string;
+  ingredients?: Ingredient[];
 }
