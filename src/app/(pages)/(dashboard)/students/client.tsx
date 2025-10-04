@@ -3,6 +3,7 @@
 import { useListStudentsQuery } from "@/store/api/students.api";
 import StoreProvider from "@/store/providers";
 import type { RootState } from "@/store";
+import { useEffect } from "react";
 
 export default function StudentsClient({ initialState }: { initialState: RootState }) {
   return (
@@ -14,7 +15,6 @@ export default function StudentsClient({ initialState }: { initialState: RootSta
 
 function StudentsList() {
   const { data, isLoading } = useListStudentsQuery();
-
   if (isLoading) return <p>Loading…</p>;
   return (
     <ul>

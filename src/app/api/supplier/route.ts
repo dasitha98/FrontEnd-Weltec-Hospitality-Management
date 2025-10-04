@@ -3,14 +3,14 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    // const students = [
-    //   { id: "1", name: "Alice", email: "alice@example.com" },
-    //   { id: "2", name: "Bob", email: "bob@example.com" },
-    // ];
+    const Supplier = [
+      { id: "1", name: "Alice", email: "alice@example.com" },
+      { id: "2", name: "Bob", email: "bob@example.com" },
+    ];
 
-    // console.log("➡️ API hit: GET /api/students");
+    console.log("➡️ API hit: GET /api/students");
 
-    // return NextResponse.json(students);
+    return NextResponse.json(Supplier);
   } catch (error) {
     console.error("❌ API error in /api/students:", error);
     return NextResponse.json(

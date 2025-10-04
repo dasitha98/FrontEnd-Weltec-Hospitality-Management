@@ -9,6 +9,6 @@ export const apiBase = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Students", "Classes", "Foods"],
+  tagTypes: ["Students", "Classes", "Foods","Supplier"],
   endpoints: () => ({}),
 });
