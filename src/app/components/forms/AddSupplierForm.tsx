@@ -2,7 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
-import type { Supplier } from "@/types/domain";
+import type { ID, Supplier } from "@/types/domain";
+import {
+  useCreateSupplierMutation,
+  useUpdateSupplierMutation,
+} from "@/store/api/supplier.api";
 
 interface AddSupplierFormProps {
   onSubmit: (data: Omit<Supplier, "id">) => void;
@@ -14,19 +18,20 @@ interface AddSupplierFormProps {
 }
 
 interface FormData {
+  id: string;
   name: string;
-  salesRepName: string;
+  repName: string;
   address: string;
-  contactNo: string;
+  contactNumber: string;
   email: string;
   notes: string;
 }
 
 interface FormErrors {
   name?: string;
-  salesRepName?: string;
+  repName?: string;
   address?: string;
-  contactNo?: string;
+  contactNumber?: string;
   email?: string;
   notes?: string;
 }
@@ -39,11 +44,26 @@ const AddSupplierForm: React.FC<AddSupplierFormProps> = ({
   submitButtonText = "Add Supplier",
   cancelButtonText = "Cancel",
 }) => {
+  const [
+    UpdateSupplier,
+    { isLoading, isSuccess: updateSuccess, isError, error },
+  ] = useUpdateSupplierMutation();
+  const [
+    CreateSupplier,
+    {
+      isLoading: isCreating,
+      isSuccess: createSuccess,
+      isError: createError,
+      error: createErrorData,
+    },
+  ] = useCreateSupplierMutation();
+
   const [formData, setFormData] = useState<FormData>({
+    id: "",
     name: "",
-    salesRepName: "",
+    repName: "",
     address: "",
-    contactNo: "",
+    contactNumber: "",
     email: "",
     notes: "",
   });
@@ -53,10 +73,11 @@ const AddSupplierForm: React.FC<AddSupplierFormProps> = ({
   useEffect(() => {
     if (initialData) {
       setFormData({
+        id: initialData.supplierId || "",
         name: initialData.name || "",
-        salesRepName: (initialData as any).salesRepName || "",
+        repName: initialData.repName || "",
         address: initialData.address || "",
-        contactNo: initialData.contactNo || "",
+        contactNumber: initialData.contactNumber || "",
         email: initialData.email || "",
         notes: initialData.notes || "",
       });
@@ -70,22 +91,22 @@ const AddSupplierForm: React.FC<AddSupplierFormProps> = ({
       newErrors.name = "Supplier name is required";
     }
 
-    if (!formData.salesRepName.trim()) {
-      newErrors.salesRepName = "Sales rep name is required";
+    if (!formData.repName.trim()) {
+      newErrors.repName = "Sales rep name is required";
     }
 
     if (!formData.address.trim()) {
       newErrors.address = "Address is required";
     }
 
-    if (!formData.contactNo.trim()) {
-      newErrors.contactNo = "Contact number is required";
+    if (!formData.contactNumber.trim()) {
+      newErrors.contactNumber = "Contact number is required";
     } else if (
       !/^[\+]?[1-9][\d]{0,15}$/.test(
-        formData.contactNo.replace(/[\s\-\(\)]/g, "")
+        formData.contactNumber.replace(/[\s\-\(\)]/g, "")
       )
     ) {
-      newErrors.contactNo = "Please enter a valid contact number";
+      newErrors.contactNumber = "Please enter a valid contact number";
     }
 
     if (!formData.email.trim()) {
@@ -98,10 +119,14 @@ const AddSupplierForm: React.FC<AddSupplierFormProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      onSubmit(formData);
+      if (isEditing) {
+        await UpdateSupplier(formData).unwrap();
+      } else {
+        await CreateSupplier(formData).unwrap();
+      }
     }
   };
 
@@ -123,6 +148,12 @@ const AddSupplierForm: React.FC<AddSupplierFormProps> = ({
     }
   };
 
+  useEffect(() => {
+    if (updateSuccess || createSuccess) {
+      onCancel();
+    }
+  }, [updateSuccess, createSuccess]);
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -136,7 +167,6 @@ const AddSupplierForm: React.FC<AddSupplierFormProps> = ({
           <FaTimes size={24} />
         </button>
       </div>
-
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Supplier Name */}
@@ -166,24 +196,24 @@ const AddSupplierForm: React.FC<AddSupplierFormProps> = ({
           {/* Sales Rep Name */}
           <div className="md:col-span-2">
             <label
-              htmlFor="salesRepName"
+              htmlFor="repName"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
               Sales Rep Name *
             </label>
             <input
               type="text"
-              id="salesRepName"
-              name="salesRepName"
-              value={formData.salesRepName}
+              id="repName"
+              name="repName"
+              value={formData.repName}
               onChange={handleInputChange}
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                errors.salesRepName ? "border-red-300" : "border-gray-300"
+                errors.repName ? "border-red-300" : "border-gray-300"
               }`}
               placeholder="Enter sales rep name"
             />
-            {errors.salesRepName && (
-              <p className="mt-1 text-sm text-red-600">{errors.salesRepName}</p>
+            {errors.repName && (
+              <p className="mt-1 text-sm text-red-600">{errors.repName}</p>
             )}
           </div>
 
@@ -214,24 +244,26 @@ const AddSupplierForm: React.FC<AddSupplierFormProps> = ({
           {/* Contact Number */}
           <div>
             <label
-              htmlFor="contactNo"
+              htmlFor="contactNumber"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
               Contact Number *
             </label>
             <input
               type="tel"
-              id="contactNo"
-              name="contactNo"
-              value={formData.contactNo}
+              id="contactNumber"
+              name="contactNumber"
+              value={formData.contactNumber}
               onChange={handleInputChange}
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                errors.contactNo ? "border-red-300" : "border-gray-300"
+                errors.contactNumber ? "border-red-300" : "border-gray-300"
               }`}
               placeholder="Enter contact number"
             />
-            {errors.contactNo && (
-              <p className="mt-1 text-sm text-red-600">{errors.contactNo}</p>
+            {errors.contactNumber && (
+              <p className="mt-1 text-sm text-red-600">
+                {errors.contactNumber}
+              </p>
             )}
           </div>
 

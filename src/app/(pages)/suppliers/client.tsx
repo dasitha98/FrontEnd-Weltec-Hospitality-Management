@@ -1,6 +1,9 @@
 "use client";
 
-import { useListSupplierQuery } from "@/store/api/supplier.api";
+import {
+  useDeleteSupplierMutation,
+  useListSupplierQuery,
+} from "@/store/api/supplier.api";
 import StoreProvider from "@/store/providers";
 import type { RootState } from "@/store";
 import { useEffect, useState } from "react";
@@ -31,12 +34,8 @@ export default function SupplierClient({
 
 function SupplierList() {
   const { data, isLoading } = useListSupplierQuery();
-  // Print the data to the console once it is successfully fetched
-  useEffect(() => {
-    console.log("Suppliers1 Data:", data); // This will print the suppliers to the console
-  }, []);
-
-  if (isLoading) return <p>Loading…</p>;
+  const [deleteSupplier, { isSuccess, isError, error }] =
+    useDeleteSupplierMutation();
 
   const [supplier, setSupplier] = useState<Supplier[]>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -44,12 +43,6 @@ function SupplierList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
-
-  // Print the data to the console once it is successfully fetched
-  useEffect(() => {
-    console.log("Suppliers2 Data:", supplier); // This will print the suppliers to the console
-    setSupplier(data);
-  }, [data]);
 
   const handleSubmit = (data: Omit<Supplier, "supplierId">) => {
     if (editingSupplier) {
@@ -85,12 +78,14 @@ function SupplierList() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (supplierId: string) => {
-    if (confirm("Are you sure you want to delete this supplier?")) {
-      setSupplier((prev: any) =>
-        prev.filter((supplier: any) => supplier.supplierId !== supplierId)
-      );
-    }
+  const handleDelete = async (supplierId: string) => {
+    await deleteSupplier(supplierId).unwrap();
+
+    // if (confirm("Are you sure you want to delete this supplier?")) {
+    //   setSupplier((prev: any) =>
+    //     prev.filter((supplier: any) => supplier.supplierId !== supplierId)
+    //   );
+    // }
   };
 
   const handleClose = () => {
@@ -196,7 +191,7 @@ function SupplierList() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {currentSuppliers.map((supplier: any, index: any) => (
+              {data?.map((supplier: any, index: any) => (
                 <tr
                   key={supplier.id}
                   className={`h-16 ${
@@ -213,7 +208,7 @@ function SupplierList() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="text-sm text-gray-900">
-                      {supplier.salesRepName}
+                      {supplier.repName}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
@@ -231,7 +226,7 @@ function SupplierList() {
                     <div className="flex items-center">
                       <FaPhone className="mr-2 text-gray-400" size={14} />
                       <div className="text-sm text-gray-900">
-                        {supplier.contactNo}
+                        {supplier.contactNumber}
                       </div>
                     </div>
                   </td>
@@ -258,7 +253,7 @@ function SupplierList() {
                         <FaEdit size={16} />
                       </button>
                       <button
-                        onClick={() => handleDelete(supplier.id)}
+                        onClick={() => handleDelete(supplier.supplierId)}
                         className="text-red-600 hover:text-red-900"
                         title="Delete supplier"
                       >

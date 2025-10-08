@@ -86,7 +86,7 @@ export interface User {
 }
 
 export interface Supplier {
-  supplierId: string;
+  supplierId?: ID;
   name?: string;
   repName?: string;
   address?: string;
@@ -94,5 +94,4 @@ export interface Supplier {
   email?: string;
   notes?: string;
   createdAt?: string;
-  ingredients?: Ingredient[];
 }
