@@ -38,39 +38,39 @@ export interface Ingredient {
   expiryDate?: string;
 }
 
-export interface Recipe {
-  id: ID;
-  name: string;
-  description?: string;
-  reference?: string;
-  category: string;
-  prepTime: number; // in minutes
-  cookTime: number; // in minutes
-  servings: number;
-  difficulty: "Easy" | "Medium" | "Hard";
-  ingredients: RecipeIngredient[];
-  instructions: string[];
-  nutritionInfo?: {
-    calories?: number;
-    protein?: number;
-    carbs?: number;
-    fat?: number;
-  };
-  tags?: string[];
-  imageUrl?: string;
-  createdBy?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
+// export interface Recipe {
+//   id: ID;
+//   name: string;
+//   description?: string;
+//   reference?: string;
+//   category: string;
+//   prepTime: number; // in minutes
+//   cookTime: number; // in minutes
+//   servings: number;
+//   difficulty: "Easy" | "Medium" | "Hard";
+//   ingredients: RecipeIngredient[];
+//   instructions: string[];
+//   nutritionInfo?: {
+//     calories?: number;
+//     protein?: number;
+//     carbs?: number;
+//     fat?: number;
+//   };
+//   tags?: string[];
+//   imageUrl?: string;
+//   createdBy?: string;
+//   createdAt?: string;
+//   updatedAt?: string;
+// }
 
-export interface RecipeIngredient {
-  ingredientId: string;
-  ingredientName: string;
-  quantity: number;
-  unit: string;
-  notes?: string;
-  cost?: number;
-}
+// export interface RecipeIngredient {
+//   ingredientId: string;
+//   ingredientName: string;
+//   quantity: number;
+//   unit: string;
+//   notes?: string;
+//   cost?: number;
+// }
 
 export interface User {
   id: ID;
@@ -94,4 +94,32 @@ export interface Supplier {
   email?: string;
   notes?: string;
   createdAt?: string;
+}
+
+export interface Recipe {
+  RecipeID?: string;
+  Name?: string;
+  Description?: string;
+  Yield?: number;
+  RLevel?: string;
+  RReference?: string;
+  TotalCost?: number;
+  Year?: string;
+  IngredientId?: string;
+  Quantity?: number;
+  Unit?: string;
+  Cost?: number;
+}
+
+export interface Class{
+  ClassID?: string;
+  Name?: string;
+  Description?: string;
+  Notes?: string;
+  ClassDateTime?: Date;
+  Location?: string;
+  RecipeID?: string;
+  SQuantity?: number;
+  RReference?: string;
+  UnitCost?: number;
 }
