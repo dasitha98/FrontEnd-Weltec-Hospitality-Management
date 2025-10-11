@@ -1,75 +1,44 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface RecipesUIState {
-  selectedCategory: string;
-  selectedDifficulty: string;
-  maxPrepTime?: number;
-  maxCookTime?: number;
-  minServings?: number;
-  favorites: string[]; // ids of recipes marked as favorites
-  searchTerm: string;
+  search: string;
+  selectedIds: string[];
+  sortBy: 'name'  | 'class';
+  sortDir: 'asc' | 'desc';
+  page: number;
+  pageSize: number;
 }
 
 const initialState: RecipesUIState = {
-  selectedCategory: "",
-  selectedDifficulty: "",
-  maxPrepTime: undefined,
-  maxCookTime: undefined,
-  minServings: undefined,
-  favorites: [],
-  searchTerm: "",
+  search: '',
+  selectedIds: [],
+  sortBy: 'name',
+  sortDir: 'asc',
+  page: 1,
+  pageSize: 20,
 };
 
 const recipesUI = createSlice({
-  name: "recipesUI",
+  name: 'recipesUI',
   initialState,
   reducers: {
-    setSelectedCategory: (s, a: PayloadAction<string>) => {
-      s.selectedCategory = a.payload;
-    },
-    setSelectedDifficulty: (s, a: PayloadAction<string>) => {
-      s.selectedDifficulty = a.payload;
-    },
-    setMaxPrepTime: (s, a: PayloadAction<number | undefined>) => {
-      s.maxPrepTime = a.payload;
-    },
-    setMaxCookTime: (s, a: PayloadAction<number | undefined>) => {
-      s.maxCookTime = a.payload;
-    },
-    setMinServings: (s, a: PayloadAction<number | undefined>) => {
-      s.minServings = a.payload;
-    },
-    setSearchTerm: (s, a: PayloadAction<string>) => {
-      s.searchTerm = a.payload;
-    },
-    toggleFavorite: (s, a: PayloadAction<string>) => {
+    setSearch: (s, a: PayloadAction<string>) => { s.search = a.payload; s.page = 1; },
+    toggleSelected: (s, a: PayloadAction<string>) => {
       const id = a.payload;
-      if (s.favorites.includes(id)) {
-        s.favorites = s.favorites.filter((favId) => favId !== id);
-      } else {
-        s.favorites.push(id);
-      }
+      s.selectedIds = s.selectedIds.includes(id)
+        ? s.selectedIds.filter(x => x !== id)
+        : [...s.selectedIds, id];
     },
-    clearFilters: (s) => {
-      s.selectedCategory = "";
-      s.selectedDifficulty = "";
-      s.maxPrepTime = undefined;
-      s.maxCookTime = undefined;
-      s.minServings = undefined;
-      s.searchTerm = "";
+    clearSelection: (s) => { s.selectedIds = []; },
+    setSort: (s, a: PayloadAction<{ by: RecipesUIState['sortBy']; dir: RecipesUIState['sortDir'] }>) => {
+      s.sortBy = a.payload.by; s.sortDir = a.payload.dir; s.page = 1;
     },
+    setPage: (s, a: PayloadAction<number>) => { s.page = a.payload; },
+    setPageSize: (s, a: PayloadAction<number>) => { s.pageSize = a.payload; s.page = 1; },
   },
 });
 
 export const {
-  setSelectedCategory,
-  setSelectedDifficulty,
-  setMaxPrepTime,
-  setMaxCookTime,
-  setMinServings,
-  setSearchTerm,
-  toggleFavorite,
-  clearFilters,
+  setSearch, toggleSelected, clearSelection, setSort, setPage, setPageSize
 } = recipesUI.actions;
-
 export default recipesUI.reducer;
