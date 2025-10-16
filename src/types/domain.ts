@@ -98,6 +98,7 @@ export interface Supplier {
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 export interface Recipe {
   RecipeID?: ID;
   Name?: string;
@@ -128,6 +129,8 @@ export interface Class{
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 export interface Ingredient {
   ingredientId?: string;
   Name?: string;
@@ -140,6 +143,10 @@ export interface Ingredient {
   purchaseCost?: number;
   usageCost?: number;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+}
+>>>>>>> Stashed changes
+=======
 }
 >>>>>>> Stashed changes
 =======
