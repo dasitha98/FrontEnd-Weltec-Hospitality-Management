@@ -152,3 +152,16 @@ export interface Ingredient {
 =======
 }
 >>>>>>> Stashed changes
+
+export interface Ingredient {
+  ingredientId?: string;
+  Name?: string;
+  nescription?: string;
+  supplierId?: ID;
+  store?: string;
+  purchaseQuantity?: number;
+  purchaseUnit?: string;
+  usageUnit?: string;
+  purchaseCost?: number;
+  usageCost?: number;
+}
