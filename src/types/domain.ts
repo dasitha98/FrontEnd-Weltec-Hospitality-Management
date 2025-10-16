@@ -96,10 +96,6 @@ export interface Supplier {
   createdAt?: string;
 }
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 export interface Recipe {
   RecipeID?: ID;
   Name?: string;
@@ -127,11 +123,7 @@ export interface Class{
   RReference?: string;
   UnitCost?: number;
 }
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+
 export interface Ingredient {
   ingredientId?: string;
   Name?: string;
@@ -143,19 +135,8 @@ export interface Ingredient {
   usageUnit?: string;
   purchaseCost?: number;
   usageCost?: number;
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 }
->>>>>>> Stashed changes
-=======
-}
->>>>>>> Stashed changes
-=======
-}
->>>>>>> Stashed changes
 
-=======
->>>>>>> Stashed changes
 export interface Ingredient {
   ingredientId?: string;
   Name?: string;
