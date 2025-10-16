@@ -1,169 +1,136 @@
 "use client";
 
-import React, { useState } from "react";
+import {
+  useDeleteClassMutation,
+  useListClassesQuery,
+} from "@/store/api/classes.api";
+import StoreProvider from "@/store/providers";
+import type { RootState } from "@/store";
+import { useEffect, useState } from "react";
 import {
   FaPlus,
   FaEdit,
   FaTrash,
   FaSearch,
-  FaClock,
-  FaUsers,
-  FaUtensils,
+  FaPhone,
+  FaEnvelope,
+  FaMapMarkerAlt,
+  FaBuilding,
 } from "react-icons/fa";
 import type { Class } from "@/types/domain";
-import AddClassForm from "../../components/forms/AddClassForm";
+import AddClassForm from "@/app/components/forms/AddClassForm";
 
-// Mock data for demonstration
-const mockClasses: Class[] = [
-  {
-    id: "1",
-    name: "Culinary Arts Fundamentals",
-    noOfStudents: 24,
-    location: "Kitchen Lab A",
-    reference: "CLS-001",
-    totalCost: 1250.0,
-    description: "Introduction to basic cooking techniques and kitchen safety",
-    instructor: "Chef Maria Rodriguez",
-    startDate: "2024-02-01",
-    endDate: "2024-05-31",
-    createdAt: "2024-01-15T10:30:00Z",
-    updatedAt: "2024-01-15T10:30:00Z",
-  },
-  {
-    id: "2",
-    name: "Advanced Pastry Techniques",
-    noOfStudents: 16,
-    location: "Bakery Lab B",
-    reference: "CLS-002",
-    totalCost: 980.5,
-    description: "Advanced techniques in pastry making and dessert preparation",
-    instructor: "Chef James Wilson",
-    startDate: "2024-02-15",
-    endDate: "2024-06-15",
-    createdAt: "2024-01-10T14:20:00Z",
-    updatedAt: "2024-01-10T14:20:00Z",
-  },
-  {
-    id: "3",
-    name: "International Cuisine",
-    noOfStudents: 20,
-    location: "Main Kitchen",
-    reference: "CLS-003",
-    totalCost: 1100.75,
-    description: "Exploring cuisines from around the world",
-    instructor: "Chef Anna Chen",
-    startDate: "2024-03-01",
-    endDate: "2024-07-31",
-    createdAt: "2024-01-05T09:15:00Z",
-    updatedAt: "2024-01-05T09:15:00Z",
-  },
-  {
-    id: "4",
-    name: "Food Safety & Sanitation",
-    noOfStudents: 30,
-    location: "Lecture Hall 1",
-    reference: "CLS-004",
-    totalCost: 750.25,
-    description: "Essential food safety practices and health regulations",
-    instructor: "Dr. Sarah Thompson",
-    startDate: "2024-01-20",
-    endDate: "2024-04-20",
-    createdAt: "2024-01-01T08:00:00Z",
-    updatedAt: "2024-01-01T08:00:00Z",
-  },
-  {
-    id: "5",
-    name: "Restaurant Management",
-    noOfStudents: 18,
-    location: "Conference Room 2",
-    reference: "CLS-005",
-    totalCost: 1350.0,
-    description: "Business aspects of running a restaurant",
-    instructor: "Prof. Michael Brown",
-    startDate: "2024-02-10",
-    endDate: "2024-06-10",
-    createdAt: "2024-01-12T11:30:00Z",
-    updatedAt: "2024-01-12T11:30:00Z",
-  },
-];
+export default function ClassClient({
+  initialState,
+}: {
+  initialState: RootState;
+}) {
+  return (
+    <StoreProvider initialState={initialState}>
+      <ClassList />
+    </StoreProvider>
+  );
+}
 
-export default function Classes() {
-  const [classes, setClasses] = useState<Class[]>(mockClasses);
+
+function ClassList() {
+    const { data, isLoading } = useListClassesQuery();
+    const [deleteClass, { isSuccess, isError, error }] =
+      useDeleteClassMutation();
+
+  const [classes, setClasses] = useState<Class[]>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingClass, setEditingClass] = useState<Class | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
 
-  const handleSubmit = (data: Omit<Class, "id">) => {
-    if (editingClass) {
-      // Update existing class
-      setClasses((prev) =>
-        prev.map((cls) =>
-          cls.id === editingClass.id
-            ? {
-                ...data,
-                id: editingClass.id,
-                updatedAt: new Date().toISOString(),
-              }
-            : cls
-        )
-      );
-    } else {
-      // Add new class
-      const newClass: Class = {
-        ...data,
-        id: Date.now().toString(), // Simple ID generation for demo
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      setClasses((prev) => [...prev, newClass]);
-    }
 
-    setEditingClass(null);
-    setIsDialogOpen(false);
-  };
+ 
+ const handleSubmit = (data: Omit<Class, "classID">) => {
+     if (editingClass) {
+       // Update existing class
+       setClasses((prev: any) =>
+         prev.map((Nclass: any) =>
+           Nclass.classId === editingClass.ClassID
+             ? {
+                 ...data,
+                 classId: editingClass.ClassID,
+                 updatedAt: new Date().toISOString(),
+               }
+             : Nclass
+         )
+       );
+     } else {
+       // Add new recipe
+       const newClass: Class = {
+         ...data,
+         ClassID: Date.now().toString() // Simple ID generation for demo
+         //CreatedAt: new Date().toISOString(),
+         // updatedAt: new Date().toISOString(),
+       };
+       setClasses((prev: any) => [...prev, newClass]);
+     }
+ 
+     setEditingClass(null);
+     setIsDialogOpen(false);
+   };
 
-  const handleEdit = (cls: Class) => {
-    setEditingClass(cls);
-    setIsDialogOpen(true);
-  };
 
-  const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this class?")) {
-      setClasses((prev) => prev.filter((cls) => cls.id !== id));
-    }
-  };
 
-  const handleClose = () => {
-    setEditingClass(null);
-    setIsDialogOpen(false);
-  };
 
-  const filteredClasses = classes.filter(
-    (cls) =>
-      cls.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cls.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cls.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cls.reference?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cls.instructor?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
-  // Pagination calculations
-  const totalPages = Math.ceil(filteredClasses.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentClasses = filteredClasses.slice(startIndex, endIndex);
-  const emptyRowsCount = Math.max(0, itemsPerPage - currentClasses.length);
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
 
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-    setCurrentPage(1); // Reset to first page when searching
-  };
+
+
+
+ 
+   const handleEdit = (Nclass: Class) => {
+     setEditingClass(Nclass);
+     setIsDialogOpen(true);
+   };
+ 
+   const handleDelete = async (ClassID: string|any) => {
+     await deleteClass(ClassID).unwrap();
+ 
+     // if (confirm("Are you sure you want to delete this supplier?")) {
+     //   setSupplier((prev: any) =>
+     //     prev.filter((supplier: any) => supplier.supplierId !== supplierId)
+     //   );
+     // }
+   };
+ 
+   const handleClose = () => {
+     setEditingClass(null);
+     setIsDialogOpen(false);
+   };
+ 
+
+   const filteredClasses = (classes || []).filter(
+     (Nclass: any) =>
+       Nclass.Name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+       Nclass.Description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+       Nclass.Notes.toLowerCase().includes(searchTerm.toLowerCase()) ||
+       Nclass.Location?.toLowerCase().includes(searchTerm.toLowerCase())
+   );
+
+   // Pagination calculations
+   const totalPages = Math.ceil(filteredClasses.length / itemsPerPage);
+   const startIndex = (currentPage - 1) * itemsPerPage;
+   const endIndex = startIndex + itemsPerPage;
+   const currentClasses = filteredClasses.slice(startIndex, endIndex);
+   const emptyRowsCount = Math.max(0, itemsPerPage - currentClasses.length);
+ 
+   const handlePageChange = (page: number) => {
+     setCurrentPage(page);
+   };
+ 
+   const handleSearch = (term: string) => {
+     setSearchTerm(term);
+     setCurrentPage(1); // Reset to first page when searching
+   };
+ 
 
   return (
     <div className="p-14">
@@ -237,53 +204,53 @@ export default function Classes() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {currentClasses.map((cls, index) => (
+              {data?.map((Nclass, index) => (
                 <tr
-                  key={cls.id}
+                  key={Nclass.ClassID}
                   className={`h-16 ${
                     index % 2 === 0 ? "bg-gray-50" : "bg-white"
                   }`}
                 >
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="text-sm font-medium text-gray-900">
-                      {cls.name}
+                      {Nclass.Name}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="text-sm text-gray-900">
-                      {cls.instructor || "N/A"}
+                      {Nclass.Description || "N/A"}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
-                    <div className="flex items-center">
+                    {/* <div className="flex items-center">
                       <FaUsers className="mr-2 text-gray-400" size={14} />
                       <span className="text-sm font-medium text-gray-900">
-                        {cls.noOfStudents}
+                        {class.noOfStudents}
                       </span>
-                    </div>
+                    </div> */}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
-                    <div className="text-sm text-gray-900">{cls.location}</div>
+                    <div className="text-sm text-gray-900">{Nclass.Notes}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
-                    <div className="text-sm text-gray-900">{cls.reference}</div>
+                    <div className="text-sm text-gray-900">{Nclass.Location}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
-                    <div className="text-sm font-medium text-gray-900">
-                      ${cls.totalCost.toFixed(2)}
-                    </div>
+                    {/* <div className="text-sm font-medium text-gray-900">
+                      ${class.totalCost.toFixed(2)}
+                    </div> */}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium align-middle">
                     <div className="flex space-x-2">
                       <button
-                        onClick={() => handleEdit(cls)}
+                        onClick={() => handleEdit(Nclass)}
                         className="text-blue-600 hover:text-blue-900"
                         title="Edit class"
                       >
                         <FaEdit size={16} />
                       </button>
                       <button
-                        onClick={() => handleDelete(cls.id)}
+                        onClick={() => handleDelete(Nclass.ClassID)}
                         className="text-red-600 hover:text-red-900"
                         title="Delete class"
                       >

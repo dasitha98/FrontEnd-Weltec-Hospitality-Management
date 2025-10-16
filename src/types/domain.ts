@@ -6,20 +6,20 @@ export interface Student {
   email: string;
 }
 
-export interface Class {
-  id: ID;
-  name: string;
-  noOfStudents: number;
-  location: string;
-  reference: string;
-  totalCost: number;
-  description?: string;
-  instructor?: string;
-  startDate?: string;
-  endDate?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
+// export interface Class {
+//   id: ID;
+//   name: string;
+//   noOfStudents: number;
+//   location: string;
+//   reference: string;
+//   totalCost: number;
+//   description?: string;
+//   instructor?: string;
+//   startDate?: string;
+//   endDate?: string;
+//   createdAt?: string;
+//   updatedAt?: string;
+// }
 
 export interface Food {
   id: ID;
@@ -99,6 +99,7 @@ export interface Supplier {
 export interface Ingredient {
   ingredientId?: string;
   Name?: string;
+<<<<<<< Updated upstream
   nescription?: string;
   supplierId?: ID;
   store?: string;
@@ -108,3 +109,33 @@ export interface Ingredient {
   purchaseCost?: number;
   usageCost?: number;
 }
+=======
+  Description?: string;
+  Yield?: number;
+  RLevel?: string;
+  RReference?: string;
+  TotalCost?: number;
+  Year?: string;
+  IngredientId?: string;
+  Quantity?: number;
+  Unit?: string;
+  Cost?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Class{
+  ClassID?: ID;
+  Name?: string;
+  Description?: string;
+  Notes?: string;
+  ClassDateTime?: Date;
+  Location?: string;
+  RecipeID?: string;
+  SQuantity?: number;
+  RReference?: string;
+  UnitCost?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+>>>>>>> Stashed changes
