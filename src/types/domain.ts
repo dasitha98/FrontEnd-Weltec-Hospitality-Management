@@ -97,7 +97,7 @@ export interface Supplier {
 }
 
 export interface Recipe {
-  RecipeID?: string;
+  RecipeID?: ID;
   Name?: string;
   Description?: string;
   Yield?: number;
@@ -112,7 +112,7 @@ export interface Recipe {
 }
 
 export interface Class{
-  ClassID?: string;
+  ClassID?: ID;
   Name?: string;
   Description?: string;
   Notes?: string;
