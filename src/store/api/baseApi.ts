@@ -12,7 +12,11 @@ export const apiBase = createApi({
     },
   }),
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   tagTypes: ["Students", "Classes", "Foods","Supplier","Recipe"],
+=======
+  tagTypes: ["Students", "Classes", "Foods","Supplier", "Ingredient"],
+>>>>>>> Stashed changes
 =======
   tagTypes: ["Students", "Classes", "Foods","Supplier", "Ingredient"],
 >>>>>>> Stashed changes
