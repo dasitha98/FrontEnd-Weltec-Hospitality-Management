@@ -96,6 +96,7 @@ export interface Supplier {
   createdAt?: string;
 }
 
+<<<<<<< Updated upstream
 export interface Recipe {
   RecipeID?: ID;
   Name?: string;
@@ -123,3 +124,17 @@ export interface Class{
   RReference?: string;
   UnitCost?: number;
 }
+=======
+export interface Ingredient {
+  ingredientId?: string;
+  Name?: string;
+  nescription?: string;
+  supplierId?: ID;
+  store?: string;
+  purchaseQuantity?: number;
+  purchaseUnit?: string;
+  usageUnit?: string;
+  purchaseCost?: number;
+  usageCost?: number;
+}
+>>>>>>> Stashed changes
