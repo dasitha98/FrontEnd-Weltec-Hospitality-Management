@@ -1,5 +1,4 @@
 import { makeStore } from "@/store";
-import { supplierApi } from "@/store/api/supplier.api";
 import IngredientClient from "./client";
 import { ingredientApi } from "@/store/api/ingredient.api";
 

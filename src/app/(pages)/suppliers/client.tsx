@@ -6,7 +6,7 @@ import {
 } from "@/store/api/supplier.api";
 import StoreProvider from "@/store/providers";
 import type { RootState } from "@/store";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   FaPlus,
   FaEdit,
@@ -17,8 +17,8 @@ import {
   FaMapMarkerAlt,
   FaBuilding,
 } from "react-icons/fa";
-import { Supplier } from "@/types/domain";
 import AddSupplierForm from "@/app/components/forms/AddSupplierForm";
+import { Supplier } from "@/types/domain";
 
 export default function SupplierClient({
   initialState,

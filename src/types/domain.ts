@@ -26,18 +26,6 @@ export interface Food {
   name: string;
 }
 
-export interface Ingredient {
-  id: ID;
-  name: string;
-  category: string;
-  unit: string;
-  quantity: number;
-  description?: string;
-  supplier?: string;
-  cost?: number;
-  expiryDate?: string;
-}
-
 export interface Recipe {
   id: ID;
   name: string;
@@ -97,7 +85,7 @@ export interface Supplier {
 }
 
 export interface Ingredient {
-  ingredientId?: string;
+  ingredientId?: ID;
   name: string;
   description?: string;
   supplierId?: ID;
@@ -107,9 +95,10 @@ export interface Ingredient {
   usageUnit?: string;
   purchaseCost?: number;
   usageCost?: number;
+  createdAt?: string;
 }
 
-export interface Recipe{
+export interface Recipe {
   Description?: string;
   Yield?: number;
   RLevel?: string;
@@ -124,7 +113,7 @@ export interface Recipe{
   updatedAt?: string;
 }
 
-export interface Class{
+export interface Class {
   ClassID?: ID;
   Name?: string;
   Description?: string;

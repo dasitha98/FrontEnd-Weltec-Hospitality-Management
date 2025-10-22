@@ -3,16 +3,7 @@
 import StoreProvider from "@/store/providers";
 import type { RootState } from "@/store";
 import { useEffect, useState } from "react";
-import {
-  FaPlus,
-  FaEdit,
-  FaTrash,
-  FaSearch,
-  FaPhone,
-  FaEnvelope,
-  FaMapMarkerAlt,
-  FaBuilding,
-} from "react-icons/fa";
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaBuilding } from "react-icons/fa";
 import {
   useDeleteIngredientMutation,
   useListIngredientQuery,
@@ -37,7 +28,7 @@ function IngredientList() {
   const [deleteIngredient, { isSuccess, isError, error }] =
     useDeleteIngredientMutation();
 
-  const [ingredient, setIngredient] = useState<Ingredient[]>();
+  const [ingredient, setIngredient] = useState<Ingredient[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(
     null
@@ -46,6 +37,7 @@ function IngredientList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
 
+  console.log("data", data);
   const handleSubmit = (data: Omit<Ingredient, "ingredientId">) => {
     if (editingIngredient) {
       // Update existing ingredient
@@ -62,13 +54,13 @@ function IngredientList() {
       );
     } else {
       // Add new ingredient
-      const newSupplier: Ingredient = {
+      const newIngredient: Ingredient = {
         ...data,
-        supplierId: Date.now().toString(), // Simple ID generation for demo
+        ingredientId: Date.now().toString(), // Simple ID generation for demo
         createdAt: new Date().toISOString(),
         // updatedAt: new Date().toISOString(),
       };
-      setIngredient((prev: any) => [...prev, newSupplier]);
+      setIngredient((prev: any) => [...prev, newIngredient]);
     }
 
     setEditingIngredient(null);
@@ -216,7 +208,7 @@ function IngredientList() {
             <tbody className="bg-white divide-y divide-gray-200">
               {data?.map((ingredient: any, index: any) => (
                 <tr
-                  key={ingredient.id}
+                  key={index}
                   className={`h-16 ${
                     index % 2 === 0 ? "bg-gray-50" : "bg-white"
                   }`}
@@ -231,7 +223,7 @@ function IngredientList() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="text-sm text-gray-900">
-                      {ingredient.repName}
+                      {ingredient?.supplier?.name}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
@@ -414,7 +406,7 @@ function IngredientList() {
           {/* Dialog */}
           <div className="flex min-h-full items-center justify-center p-4">
             <div className="relative bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-              {/* <AddIngredientForm
+              <AddIngredientForm
                 onSubmit={handleSubmit}
                 onCancel={handleClose}
                 initialData={editingIngredient || undefined}
@@ -423,7 +415,7 @@ function IngredientList() {
                   editingIngredient ? "Update Ingredient" : "Add Ingredient"
                 }
                 cancelButtonText="Cancel"
-              /> */}
+              />
             </div>
           </div>
         </div>

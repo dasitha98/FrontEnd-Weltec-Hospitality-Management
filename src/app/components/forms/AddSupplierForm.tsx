@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
-import type { ID, Supplier } from "@/types/domain";
 import {
   useCreateSupplierMutation,
   useUpdateSupplierMutation,
 } from "@/store/api/supplier.api";
+import { Supplier } from "@/types/domain";
 
 interface AddSupplierFormProps {
   onSubmit: (data: Omit<Supplier, "id">) => void;
