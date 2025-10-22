@@ -1,9 +1,5 @@
 "use client";
 
-import {
-  useDeleteSupplierMutation,
-  useListSupplierQuery,
-} from "@/store/api/supplier.api";
 import StoreProvider from "@/store/providers";
 import type { RootState } from "@/store";
 import { useEffect, useState } from "react";
@@ -17,98 +13,116 @@ import {
   FaMapMarkerAlt,
   FaBuilding,
 } from "react-icons/fa";
-import { Supplier } from "@/types/domain";
-import AddSupplierForm from "@/app/components/forms/AddSupplierForm";
+import {
+  useDeleteIngredientMutation,
+  useListIngredientQuery,
+} from "@/store/api/ingredient.api";
+import AddIngredientForm from "@/app/components/forms/AddIngredientForm";
+import { Ingredient } from "@/types/domain";
 
-export default function SupplierClient({
+export default function IngredientClient({
   initialState,
 }: {
   initialState: RootState;
 }) {
   return (
     <StoreProvider initialState={initialState}>
-      <SupplierList />
+      <IngredientList />
     </StoreProvider>
   );
 }
 
-function SupplierList() {
-  const { data, isLoading } = useListSupplierQuery();
-  const [deleteSupplier, { isSuccess, isError, error }] =
-    useDeleteSupplierMutation();
+function IngredientList() {
+  const { data, isLoading } = useListIngredientQuery();
+  const [deleteIngredient, { isSuccess, isError, error }] =
+    useDeleteIngredientMutation();
 
-  const [supplier, setSupplier] = useState<Supplier[]>();
+  const [ingredient, setIngredient] = useState<Ingredient[]>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
+  const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(
+    null
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
 
-  const handleSubmit = (data: Omit<Supplier, "supplierId">) => {
-    if (editingSupplier) {
-      // Update existing supplier
-      setSupplier((prev: any) =>
-        prev.map((supplier: any) =>
-          supplier.supplierId === editingSupplier.supplierId
+  const handleSubmit = (data: Omit<Ingredient, "ingredientId">) => {
+    if (editingIngredient) {
+      // Update existing ingredient
+      setIngredient((prev: any) =>
+        prev.map((ingredient: any) =>
+          ingredient.ingredientId === editingIngredient.ingredientId
             ? {
                 ...data,
-                supplierId: editingSupplier.supplierId,
+                supplierId: editingIngredient.ingredientId,
                 updatedAt: new Date().toISOString(),
               }
-            : supplier
+            : ingredient
         )
       );
     } else {
-      // Add new supplier
-      const newSupplier: Supplier = {
+      // Add new ingredient
+      const newSupplier: Ingredient = {
         ...data,
         supplierId: Date.now().toString(), // Simple ID generation for demo
         createdAt: new Date().toISOString(),
         // updatedAt: new Date().toISOString(),
       };
-      setSupplier((prev: any) => [...prev, newSupplier]);
+      setIngredient((prev: any) => [...prev, newSupplier]);
     }
 
-    setEditingSupplier(null);
+    setEditingIngredient(null);
     setIsDialogOpen(false);
   };
 
-  const handleEdit = (supplier: Supplier) => {
-    setEditingSupplier(supplier);
+  const handleEdit = (ingredient: Ingredient) => {
+    setEditingIngredient(ingredient);
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (supplierId: string) => {
-    await deleteSupplier(supplierId).unwrap();
+  const handleDelete = async (ingredientId: string) => {
+    await deleteIngredient(ingredientId).unwrap();
 
-    // if (confirm("Are you sure you want to delete this supplier?")) {
+    // if (confirm("Are you sure you want to delete this ingredient?")) {
     //   setSupplier((prev: any) =>
-    //     prev.filter((supplier: any) => supplier.supplierId !== supplierId)
+    //     prev.filter((ingredient: any) => ingredient.ingredientId !== ingredientId)
     //   );
     // }
   };
 
   const handleClose = () => {
-    setEditingSupplier(null);
+    setEditingIngredient(null);
     setIsDialogOpen(false);
   };
 
-  const filteredSuppliers = (supplier || []).filter(
-    (supplier: any) =>
-      supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      supplier.repName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      supplier.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      supplier.contactNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      supplier.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      supplier.notes?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredIngredients = (ingredient || []).filter(
+    (ingredient: any) =>
+      ingredient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ingredient.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ingredient.ingredientId
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      ingredient.store.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ingredient.purchaseQuantity
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      ingredient.purchaseUnit
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      ingredient.usageUnit.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ingredient.purchaseCost
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      ingredient.usageCost.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ingredient.createdAt.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Pagination calculations
-  const totalPages = Math.ceil(filteredSuppliers.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredIngredients.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentSuppliers = filteredSuppliers.slice(startIndex, endIndex);
-  const emptyRowsCount = Math.max(0, itemsPerPage - currentSuppliers.length);
+  const currentIngredients = filteredIngredients.slice(startIndex, endIndex);
+  const emptyRowsCount = Math.max(0, itemsPerPage - currentIngredients.length);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -129,11 +143,11 @@ function SupplierList() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Supplier Management
+          Ingredient Management
         </h1>
         <p className="text-gray-600">
-          Manage your suppliers, track contact information, and organize
-          supplier details and notes.
+          Manage your ingredients, track contact information, and organize
+          ingredient details and notes.
         </p>
       </div>
 
@@ -143,7 +157,7 @@ function SupplierList() {
           <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Search suppliers..."
+            placeholder="Search ingredients..."
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -154,11 +168,11 @@ function SupplierList() {
           className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
         >
           <FaPlus className="mr-2" size={16} />
-          Add Supplier
+          Add Ingredient
         </button>
       </div>
 
-      {/* Suppliers Table */}
+      {/* Ingredient Table */}
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
         <div
           className="overflow-x-auto hide-scrollbar"
@@ -168,22 +182,31 @@ function SupplierList() {
             <thead className="bg-blue-600 sticky top-0 z-10">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
-                  Supplier Name
+                  Ingredient Name
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Sales Rep
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
-                  Address
+                  Store
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
-                  Contact No
+                  Purchase Quantity
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
-                  Email
+                  Purchase Unit
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
-                  Notes
+                  Usage Unit
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
+                  Purchase Unit
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
+                  Purchase Cost
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
+                  Usage Cost
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                   Action
@@ -191,9 +214,9 @@ function SupplierList() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {data?.map((supplier: any, index: any) => (
+              {data?.map((ingredient: any, index: any) => (
                 <tr
-                  key={supplier.id}
+                  key={ingredient.id}
                   className={`h-16 ${
                     index % 2 === 0 ? "bg-gray-50" : "bg-white"
                   }`}
@@ -202,60 +225,75 @@ function SupplierList() {
                     <div className="flex items-center">
                       <FaBuilding className="mr-2 text-gray-400" size={14} />
                       <div className="text-sm font-medium text-gray-900">
-                        {supplier.name}
+                        {ingredient.name}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="text-sm text-gray-900">
-                      {supplier.repName}
+                      {ingredient.repName}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="flex items-center">
-                      <FaMapMarkerAlt
-                        className="mr-2 text-gray-400"
-                        size={14}
-                      />
                       <div className="text-sm text-gray-900">
-                        {supplier.address}
+                        {ingredient.store}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="flex items-center">
-                      <FaPhone className="mr-2 text-gray-400" size={14} />
                       <div className="text-sm text-gray-900">
-                        {supplier.contactNumber}
+                        {ingredient.purchaseQuantity}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="flex items-center">
-                      <FaEnvelope className="mr-2 text-gray-400" size={14} />
                       <div className="text-sm text-gray-900">
-                        {supplier.email}
+                        {ingredient.purchaseUnit}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
+                    <div className="flex items-center">
+                      <div className="text-sm text-gray-900">
+                        {ingredient.usageUnit}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
+                    <div className="flex items-center">
+                      <div className="text-sm text-gray-900">
+                        {ingredient.purchaseCost}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
+                    <div className="flex items-center">
+                      <div className="text-sm text-gray-900">
+                        {ingredient.usageCost}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 align-middle border-r border-gray-200">
                     <div className="text-sm text-gray-900 max-w-xs truncate">
-                      {supplier.notes || "No notes"}
+                      {ingredient.Description || "No Description"}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium align-middle">
                     <div className="flex space-x-2">
                       <button
-                        onClick={() => handleEdit(supplier)}
+                        onClick={() => handleEdit(ingredient)}
                         className="text-blue-600 hover:text-blue-900"
-                        title="Edit supplier"
+                        title="Edit ingredient"
                       >
                         <FaEdit size={16} />
                       </button>
                       <button
-                        onClick={() => handleDelete(supplier.supplierId)}
+                        onClick={() => handleDelete(ingredient.ingredientId)}
                         className="text-red-600 hover:text-red-900"
-                        title="Delete supplier"
+                        title="Delete ingredient"
                       >
                         <FaTrash size={16} />
                       </button>
@@ -269,7 +307,7 @@ function SupplierList() {
                 <tr
                   key={`empty-${index}`}
                   className={`h-16 ${
-                    (currentSuppliers.length + index) % 2 === 0
+                    (currentIngredients.length + index) % 2 === 0
                       ? "bg-gray-50"
                       : "bg-white"
                   }`}
@@ -304,13 +342,15 @@ function SupplierList() {
           </table>
         </div>
 
-        {currentSuppliers.length === 0 && (
+        {currentIngredients.length === 0 && (
           <div className="text-center py-12">
-            <div className="text-gray-500 text-lg mb-2">No suppliers found</div>
+            <div className="text-gray-500 text-lg mb-2">
+              No ingredients found
+            </div>
             <p className="text-gray-400">
               {searchTerm
                 ? "Try adjusting your search terms"
-                : "Add your first supplier to get started"}
+                : "Add your first ingredient to get started"}
             </p>
           </div>
         )}
@@ -321,8 +361,8 @@ function SupplierList() {
         <div className="flex items-center justify-between mt-4">
           <div className="text-sm text-gray-700">
             Showing {startIndex + 1} to{" "}
-            {Math.min(endIndex, filteredSuppliers.length)} of{" "}
-            {filteredSuppliers.length} results
+            {Math.min(endIndex, filteredIngredients.length)} of{" "}
+            {filteredIngredients.length} results
           </div>
           <div className="flex items-center space-x-2">
             <button
@@ -362,7 +402,7 @@ function SupplierList() {
         </div>
       )}
 
-      {/* Supplier Dialog */}
+      {/* Ingredient Dialog */}
       {isDialogOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           {/* Backdrop */}
@@ -374,16 +414,16 @@ function SupplierList() {
           {/* Dialog */}
           <div className="flex min-h-full items-center justify-center p-4">
             <div className="relative bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-              <AddSupplierForm
+              {/* <AddIngredientForm
                 onSubmit={handleSubmit}
                 onCancel={handleClose}
-                initialData={editingSupplier || undefined}
-                isEditing={!!editingSupplier}
+                initialData={editingIngredient || undefined}
+                isEditing={!!editingIngredient}
                 submitButtonText={
-                  editingSupplier ? "Update Supplier" : "Add Supplier"
+                  editingIngredient ? "Update Ingredient" : "Add Ingredient"
                 }
                 cancelButtonText="Cancel"
-              />
+              /> */}
             </div>
           </div>
         </div>

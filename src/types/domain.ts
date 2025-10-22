@@ -98,8 +98,8 @@ export interface Supplier {
 
 export interface Ingredient {
   ingredientId?: string;
-  Name?: string;
-  nescription?: string;
+  name: string;
+  description?: string;
   supplierId?: ID;
   store?: string;
   purchaseQuantity?: number;

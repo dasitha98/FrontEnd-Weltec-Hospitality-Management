@@ -1,7 +1,7 @@
 import { apiBase } from "./baseApi";
 import type { Ingredient, ID } from "@/types/domain";
 
-export const supplierApi = apiBase.injectEndpoints({
+export const ingredientApi = apiBase.injectEndpoints({
   endpoints: (b) => ({
     listIngredient: b.query<Ingredient[], void>({
       query: () => ({
@@ -47,8 +47,8 @@ export const supplierApi = apiBase.injectEndpoints({
 
 export const {
   useListIngredientQuery,
-  // useGetSupplierQuery,
+  // useGetIngredientQuery,
   useCreateIngredientMutation,
   useUpdateIngredientMutation,
   useDeleteIngredientMutation,
-} = supplierApi;
+} = ingredientApi;
