@@ -14,7 +14,7 @@ export const recipeApi = apiBase.injectEndpoints({
     //   query: (id) => `/suppliers/${id}`,
     //   providesTags: (_r, _e, id) => [{ type: "Supplier", id }],
     // }),
-    createRecipe: b.mutation<Recipe, Omit<Recipe, "id">>({
+    createRecipe: b.mutation<Recipe, Omit<Recipe, "RecipeId">>({
       query: (body) => ({
         url: `/recipes`,
         method: "POST",
@@ -28,10 +28,7 @@ export const recipeApi = apiBase.injectEndpoints({
         method: "PUT",
         body: patch,
       }),
-      invalidatesTags: (_r, _e, { id }) => [
-        { type: "Recipe", id },
-        "Recipe",
-      ],
+      invalidatesTags: (_r, _e, { id }) => [{ type: "Recipe", id }, "Recipe"],
     }),
     deleteRecipe: b.mutation<{ success: true }, ID>({
       // query: (id) => ({ url: `/supplier/${id}`, method: "DELETE" }),

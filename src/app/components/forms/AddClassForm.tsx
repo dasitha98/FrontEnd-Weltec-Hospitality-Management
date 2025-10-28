@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import type { Class, Recipe } from "@/types/domain";
 
 interface AddClassFormProps {
-  onSubmit: (data: Omit<Class, "id">) => void;
+  onSubmit: (data: Omit<Class, "ClassID">) => void;
   onCancel: () => void;
   initialData?: Partial<Class>;
   isEditing?: boolean;
@@ -25,7 +25,7 @@ interface RecipeEntry {
 interface FormData {
   name: string;
   description: string;
-  notes: string;
+  Notes: string;
   location: string;
   dateTime: string;
   recipes: RecipeEntry[];
@@ -34,7 +34,7 @@ interface FormData {
 interface FormErrors {
   name?: string;
   description?: string;
-  notes?: string;
+  Notes?: string;
   location?: string;
   dateTime?: string;
   recipeValidation?: {
@@ -75,7 +75,7 @@ export default function AddClassForm({
   const [formData, setFormData] = useState<FormData>({
     name: "",
     description: "",
-    notes: "",
+    Notes: "",
     location: "",
     dateTime: "",
     recipes: [
@@ -99,7 +99,7 @@ export default function AddClassForm({
       setFormData({
         name: initialData.name || "",
         description: initialData.description || "",
-        notes: "",
+        Notes: "",
         location: initialData.location || "",
         dateTime: initialData.startDate || "",
         recipes: [],
@@ -154,8 +154,8 @@ export default function AddClassForm({
       newErrors.recipeValidation[index].unitCost = "Unit Cost is required";
       isValid = false;
     } else {
-      const cost = parseFloat(recipe.unitCost);
-      if (isNaN(cost) || cost < 0) {
+      const Cost = parseFloat(recipe.unitCost);
+      if (isNaN(Cost) || Cost < 0) {
         newErrors.recipeValidation[index].unitCost =
           "Unit Cost must be a non-negative number";
         isValid = false;
@@ -217,7 +217,7 @@ export default function AddClassForm({
         if (recipe.id === recipeId) {
           const updatedRecipe = { ...recipe, [field]: value };
 
-          // Calculate total cost when relevant fields change
+          // Calculate total Cost when relevant fields change
           if (field === "noOfStudents" || field === "unitCost") {
             const noOfStudents =
               field === "noOfStudents"
@@ -261,8 +261,8 @@ export default function AddClassForm({
 
   const getTotalCost = () => {
     return formData.recipes.reduce((total, recipe) => {
-      const cost = parseFloat(recipe.totalCost);
-      return total + (isNaN(cost) ? 0 : cost);
+      const Cost = parseFloat(recipe.totalCost);
+      return total + (isNaN(Cost) ? 0 : Cost);
     }, 0);
   };
 
@@ -311,7 +311,7 @@ export default function AddClassForm({
         return total + (isNaN(students) ? 0 : students);
       }, 0),
       location: formData.location,
-      reference: formData.notes.trim() || "",
+      reference: formData.Notes.trim() || "",
       totalCost: getTotalCost(),
       startDate: formData.dateTime,
     };
@@ -323,7 +323,7 @@ export default function AddClassForm({
     setFormData({
       name: "",
       description: "",
-      notes: "",
+      Notes: "",
       location: "",
       dateTime: "",
       recipes: [
@@ -430,17 +430,17 @@ export default function AddClassForm({
               {/* Notes */}
               <div>
                 <label
-                  htmlFor="notes"
+                  htmlFor="Notes"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
                   Notes
                 </label>
                 <input
-                  id="notes"
+                  id="Notes"
                   type="text"
-                  value={formData.notes}
-                  onChange={(e) => handleInputChange("notes", e.target.value)}
-                  placeholder="Enter notes"
+                  value={formData.Notes}
+                  onChange={(e) => handleInputChange("Notes", e.target.value)}
+                  placeholder="Enter Notes"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors hover:border-gray-400"
                 />
               </div>
@@ -520,7 +520,7 @@ export default function AddClassForm({
               {/* Recipe Table */}
               <div className="overflow-x-auto">
                 <table className="min-w-full bg-white border border-gray-200 rounded-md">
-                  <thead className="bg-blue-600 text-white">
+                  <thead className="bg-blue-950 text-white">
                     <tr>
                       <th className="px-4 py-2 text-left text-sm font-medium">
                         Recipe
@@ -684,7 +684,7 @@ export default function AddClassForm({
                 <button
                   type="button"
                   onClick={addRecipe}
-                  className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  className="px-4 py-2 bg-blue-950 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 >
                   Add Recipe
                 </button>
@@ -716,7 +716,7 @@ export default function AddClassForm({
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-sm"
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-950 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-sm"
             >
               Save
             </button>

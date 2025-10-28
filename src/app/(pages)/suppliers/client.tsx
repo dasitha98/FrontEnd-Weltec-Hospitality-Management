@@ -44,16 +44,16 @@ function SupplierList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
 
-  const handleSubmit = (data: Omit<Supplier, "supplierId">) => {
+  const handleSubmit = (data: Omit<Supplier, "SupplierId">) => {
     if (editingSupplier) {
       // Update existing supplier
       setSupplier((prev: any) =>
         prev.map((supplier: any) =>
-          supplier.supplierId === editingSupplier.supplierId
+          supplier.SupplierId === editingSupplier.SupplierId
             ? {
                 ...data,
-                supplierId: editingSupplier.supplierId,
-                updatedAt: new Date().toISOString(),
+                SupplierId: editingSupplier.SupplierId,
+                UpdatedAt: new Date().toISOString(),
               }
             : supplier
         )
@@ -62,9 +62,9 @@ function SupplierList() {
       // Add new supplier
       const newSupplier: Supplier = {
         ...data,
-        supplierId: Date.now().toString(), // Simple ID generation for demo
-        createdAt: new Date().toISOString(),
-        // updatedAt: new Date().toISOString(),
+        SupplierId: Date.now().toString(), // Simple ID generation for demo
+        CreatedAt: new Date().toISOString(),
+        // UpdatedAt: new Date().toISOString(),
       };
       setSupplier((prev: any) => [...prev, newSupplier]);
     }
@@ -95,12 +95,14 @@ function SupplierList() {
 
   const filteredSuppliers = (supplier || []).filter(
     (supplier: any) =>
-      supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      supplier.repName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      supplier.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      supplier.contactNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      supplier.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      supplier.notes?.toLowerCase().includes(searchTerm.toLowerCase())
+      supplier.Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      supplier.RepName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      supplier.Address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      supplier.ContactNumber?.toLowerCase().includes(
+        searchTerm.toLowerCase()
+      ) ||
+      supplier.Email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      supplier.Notes?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Pagination calculations
@@ -133,7 +135,7 @@ function SupplierList() {
         </h1>
         <p className="text-gray-600">
           Manage your suppliers, track contact information, and organize
-          supplier details and notes.
+          supplier details and Notes.
         </p>
       </div>
 
@@ -151,7 +153,7 @@ function SupplierList() {
         </div>
         <button
           onClick={() => setIsDialogOpen(true)}
-          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+          className="inline-flex items-center px-4 py-2 bg-blue-950 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
         >
           <FaPlus className="mr-2" size={16} />
           Add Supplier
@@ -165,7 +167,7 @@ function SupplierList() {
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           <table className="min-w-full divide-y divide-gray-200 border border-gray-300">
-            <thead className="bg-blue-600 sticky top-0 z-10">
+            <thead className="bg-blue-950 sticky top-0 z-10">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Supplier Name
@@ -202,13 +204,13 @@ function SupplierList() {
                     <div className="flex items-center">
                       <FaBuilding className="mr-2 text-gray-400" size={14} />
                       <div className="text-sm font-medium text-gray-900">
-                        {supplier.name}
+                        {supplier.Name}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="text-sm text-gray-900">
-                      {supplier.repName}
+                      {supplier.RepName}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
@@ -218,7 +220,7 @@ function SupplierList() {
                         size={14}
                       />
                       <div className="text-sm text-gray-900">
-                        {supplier.address}
+                        {supplier.Address}
                       </div>
                     </div>
                   </td>
@@ -226,7 +228,7 @@ function SupplierList() {
                     <div className="flex items-center">
                       <FaPhone className="mr-2 text-gray-400" size={14} />
                       <div className="text-sm text-gray-900">
-                        {supplier.contactNumber}
+                        {supplier.ContactNumber}
                       </div>
                     </div>
                   </td>
@@ -234,13 +236,13 @@ function SupplierList() {
                     <div className="flex items-center">
                       <FaEnvelope className="mr-2 text-gray-400" size={14} />
                       <div className="text-sm text-gray-900">
-                        {supplier.email}
+                        {supplier.Email}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 align-middle border-r border-gray-200">
                     <div className="text-sm text-gray-900 max-w-xs truncate">
-                      {supplier.notes || "No notes"}
+                      {supplier.Notes || "No Notes"}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium align-middle">
@@ -253,7 +255,7 @@ function SupplierList() {
                         <FaEdit size={16} />
                       </button>
                       <button
-                        onClick={() => handleDelete(supplier.supplierId)}
+                        onClick={() => handleDelete(supplier.SupplierId)}
                         className="text-red-600 hover:text-red-900"
                         title="Delete supplier"
                       >
@@ -341,7 +343,7 @@ function SupplierList() {
                     onClick={() => handlePageChange(page)}
                     className={`px-3 py-1 text-sm border rounded-md ${
                       page === currentPage
-                        ? "bg-blue-600 text-white border-blue-600"
+                        ? "bg-blue-950 text-white border-blue-600"
                         : "border-gray-300 hover:bg-gray-50"
                     }`}
                   >

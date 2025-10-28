@@ -52,14 +52,14 @@ export default function Sidebar() {
   ];
 
   return (
-    <div className="nav-menu bg-blue-600 text-white">
-      <Image
+    <div className="nav-menu bg-blue-950 text-white">
+      {/* <Image
         className="image"
         src={"/weltec_logo.jpg"}
         alt={"weltec_logo"}
         height={80}
         width={100}
-      />
+      /> */}
       <ul className="nav-menu-items">
         {SidebarData.map((item, index) => {
           return (

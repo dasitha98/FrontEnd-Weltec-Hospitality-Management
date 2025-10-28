@@ -32,11 +32,9 @@ export default function ClassClient({
   );
 }
 
-
 function ClassList() {
-    const { data, isLoading } = useListClassesQuery();
-    const [deleteClass, { isSuccess, isError, error }] =
-      useDeleteClassMutation();
+  const { data, isLoading } = useListClassesQuery();
+  const [deleteClass, { isSuccess, isError, error }] = useDeleteClassMutation();
 
   const [classes, setClasses] = useState<Class[]>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -45,92 +43,78 @@ function ClassList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
 
+  const handleSubmit = (data: Omit<Class, "ClassID">) => {
+    if (editingClass) {
+      // Update existing class
+      setClasses((prev: any) =>
+        prev.map((Nclass: any) =>
+          Nclass.ClassID === editingClass.ClassID
+            ? {
+                ...data,
+                ClassID: editingClass.ClassID,
+                UpdatedAt: new Date().toISOString(),
+              }
+            : Nclass
+        )
+      );
+    } else {
+      // Add new class
+      const newClass: Class = {
+        ...data,
+        ClassID: Date.now().toString(), // Simple ID generation for demo
+        //CreatedAt: new Date().toISOString(),
+        // UpdatedAt: new Date().toISOString(),
+      };
+      setClasses((prev: any) => [...prev, newClass]);
+    }
 
- 
- const handleSubmit = (data: Omit<Class, "classID">) => {
-     if (editingClass) {
-       // Update existing class
-       setClasses((prev: any) =>
-         prev.map((Nclass: any) =>
-           Nclass.classId === editingClass.ClassID
-             ? {
-                 ...data,
-                 classId: editingClass.ClassID,
-                 updatedAt: new Date().toISOString(),
-               }
-             : Nclass
-         )
-       );
-     } else {
-       // Add new recipe
-       const newClass: Class = {
-         ...data,
-         ClassID: Date.now().toString() // Simple ID generation for demo
-         //CreatedAt: new Date().toISOString(),
-         // updatedAt: new Date().toISOString(),
-       };
-       setClasses((prev: any) => [...prev, newClass]);
-     }
- 
-     setEditingClass(null);
-     setIsDialogOpen(false);
-   };
+    setEditingClass(null);
+    setIsDialogOpen(false);
+  };
 
+  const handleEdit = (Nclass: Class) => {
+    setEditingClass(Nclass);
+    setIsDialogOpen(true);
+  };
 
+  const handleDelete = async (ClassID: string | any) => {
+    await deleteClass(ClassID).unwrap();
 
+    // if (confirm("Are you sure you want to delete this supplier?")) {
+    //   setSupplier((prev: any) =>
+    //     prev.filter((supplier: any) => supplier.supplierId !== supplierId)
+    //   );
+    // }
+  };
 
+  const handleClose = () => {
+    setEditingClass(null);
+    setIsDialogOpen(false);
+  };
 
+  const filteredClasses = (classes || []).filter(
+    (Nclass: any) =>
+      Nclass.Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      Nclass.Description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      Nclass.Notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      Nclass.Location?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredClasses.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentClasses = filteredClasses.slice(startIndex, endIndex);
+  const emptyRowsCount = Math.max(0, itemsPerPage - currentClasses.length);
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
-
-
- 
-   const handleEdit = (Nclass: Class) => {
-     setEditingClass(Nclass);
-     setIsDialogOpen(true);
-   };
- 
-   const handleDelete = async (ClassID: string|any) => {
-     await deleteClass(ClassID).unwrap();
- 
-     // if (confirm("Are you sure you want to delete this supplier?")) {
-     //   setSupplier((prev: any) =>
-     //     prev.filter((supplier: any) => supplier.supplierId !== supplierId)
-     //   );
-     // }
-   };
- 
-   const handleClose = () => {
-     setEditingClass(null);
-     setIsDialogOpen(false);
-   };
- 
-
-   const filteredClasses = (classes || []).filter(
-     (Nclass: any) =>
-       Nclass.Name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       Nclass.Description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       Nclass.Notes.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       Nclass.Location?.toLowerCase().includes(searchTerm.toLowerCase())
-   );
-
-   // Pagination calculations
-   const totalPages = Math.ceil(filteredClasses.length / itemsPerPage);
-   const startIndex = (currentPage - 1) * itemsPerPage;
-   const endIndex = startIndex + itemsPerPage;
-   const currentClasses = filteredClasses.slice(startIndex, endIndex);
-   const emptyRowsCount = Math.max(0, itemsPerPage - currentClasses.length);
- 
-   const handlePageChange = (page: number) => {
-     setCurrentPage(page);
-   };
- 
-   const handleSearch = (term: string) => {
-     setSearchTerm(term);
-     setCurrentPage(1); // Reset to first page when searching
-   };
- 
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    setCurrentPage(1); // Reset to first page when searching
+  };
 
   return (
     <div className="p-14">
@@ -164,7 +148,7 @@ function ClassList() {
         </div>
         <button
           onClick={() => setIsDialogOpen(true)}
-          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+          className="inline-flex items-center px-4 py-2 bg-blue-950 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
         >
           <FaPlus className="mr-2" size={16} />
           Add Class
@@ -178,7 +162,7 @@ function ClassList() {
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           <table className="min-w-full divide-y divide-gray-200 border border-gray-300">
-            <thead className="bg-blue-600 sticky top-0 z-10">
+            <thead className="bg-blue-950 sticky top-0 z-10">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Class Name
@@ -233,7 +217,9 @@ function ClassList() {
                     <div className="text-sm text-gray-900">{Nclass.Notes}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
-                    <div className="text-sm text-gray-900">{Nclass.Location}</div>
+                    <div className="text-sm text-gray-900">
+                      {Nclass.Location}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     {/* <div className="text-sm font-medium text-gray-900">
@@ -338,7 +324,7 @@ function ClassList() {
                     onClick={() => handlePageChange(page)}
                     className={`px-3 py-1 text-sm border rounded-md ${
                       page === currentPage
-                        ? "bg-blue-600 text-white border-blue-600"
+                        ? "bg-blue-950 text-white border-blue-600"
                         : "border-gray-300 hover:bg-gray-50"
                     }`}
                   >

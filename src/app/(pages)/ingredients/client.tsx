@@ -37,17 +37,16 @@ function IngredientList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
 
-  console.log("data", data);
-  const handleSubmit = (data: Omit<Ingredient, "ingredientId">) => {
+  const handleSubmit = (data: Omit<Ingredient, "IngredientId">) => {
     if (editingIngredient) {
       // Update existing ingredient
       setIngredient((prev: any) =>
         prev.map((ingredient: any) =>
-          ingredient.ingredientId === editingIngredient.ingredientId
+          ingredient.IngredientId === editingIngredient.IngredientId
             ? {
                 ...data,
-                supplierId: editingIngredient.ingredientId,
-                updatedAt: new Date().toISOString(),
+                SupplierId: editingIngredient.IngredientId,
+                UpdatedAt: new Date().toISOString(),
               }
             : ingredient
         )
@@ -56,9 +55,9 @@ function IngredientList() {
       // Add new ingredient
       const newIngredient: Ingredient = {
         ...data,
-        ingredientId: Date.now().toString(), // Simple ID generation for demo
-        createdAt: new Date().toISOString(),
-        // updatedAt: new Date().toISOString(),
+        IngredientId: Date.now().toString(), // Simple ID generation for demo
+        CreatedAt: new Date().toISOString(),
+        // UpdatedAt: new Date().toISOString(),
       };
       setIngredient((prev: any) => [...prev, newIngredient]);
     }
@@ -72,12 +71,12 @@ function IngredientList() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (ingredientId: string) => {
-    await deleteIngredient(ingredientId).unwrap();
+  const handleDelete = async (IngredientId: string) => {
+    await deleteIngredient(IngredientId).unwrap();
 
     // if (confirm("Are you sure you want to delete this ingredient?")) {
     //   setSupplier((prev: any) =>
-    //     prev.filter((ingredient: any) => ingredient.ingredientId !== ingredientId)
+    //     prev.filter((ingredient: any) => ingredient.IngredientId !== IngredientId)
     //   );
     // }
   };
@@ -89,24 +88,24 @@ function IngredientList() {
 
   const filteredIngredients = (ingredient || []).filter(
     (ingredient: any) =>
-      ingredient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ingredient.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ingredient.ingredientId
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      ingredient.store.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ingredient.purchaseQuantity
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      ingredient.purchaseUnit
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      ingredient.usageUnit.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ingredient.purchaseCost
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      ingredient.usageCost.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ingredient.createdAt.toLowerCase().includes(searchTerm.toLowerCase())
+      ingredient.Name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ingredient.Description?.toLowerCase().includes(
+        searchTerm.toLowerCase()
+      ) ||
+      ingredient.IngredientId?.toLowerCase().includes(
+        searchTerm.toLowerCase()
+      ) ||
+      ingredient.Store?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ingredient.PurchaseQuantity?.toString().includes(
+        searchTerm.toLowerCase()
+      ) ||
+      ingredient.PurchaseUnit?.toLowerCase().includes(
+        searchTerm.toLowerCase()
+      ) ||
+      ingredient.UsageUnit?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ingredient.PurchaseCost?.toString().includes(searchTerm.toLowerCase()) ||
+      ingredient.UsageCost?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ingredient.CreatedAt?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Pagination calculations
@@ -139,7 +138,7 @@ function IngredientList() {
         </h1>
         <p className="text-gray-600">
           Manage your ingredients, track contact information, and organize
-          ingredient details and notes.
+          ingredient details and Notes.
         </p>
       </div>
 
@@ -157,7 +156,7 @@ function IngredientList() {
         </div>
         <button
           onClick={() => setIsDialogOpen(true)}
-          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+          className="inline-flex items-center px-4 py-2 bg-blue-950 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
         >
           <FaPlus className="mr-2" size={16} />
           Add Ingredient
@@ -171,7 +170,7 @@ function IngredientList() {
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           <table className="min-w-full divide-y divide-gray-200 border border-gray-300">
-            <thead className="bg-blue-600 sticky top-0 z-10">
+            <thead className="bg-blue-950 sticky top-0 z-10">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Ingredient Name
@@ -217,54 +216,54 @@ function IngredientList() {
                     <div className="flex items-center">
                       <FaBuilding className="mr-2 text-gray-400" size={14} />
                       <div className="text-sm font-medium text-gray-900">
-                        {ingredient.name}
+                        {ingredient.Name}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="text-sm text-gray-900">
-                      {ingredient?.supplier?.name}
+                      {ingredient?.supplier?.Name}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="flex items-center">
                       <div className="text-sm text-gray-900">
-                        {ingredient.store}
+                        {ingredient.Store}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="flex items-center">
                       <div className="text-sm text-gray-900">
-                        {ingredient.purchaseQuantity}
+                        {ingredient.PurchaseQuantity}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="flex items-center">
                       <div className="text-sm text-gray-900">
-                        {ingredient.purchaseUnit}
+                        {ingredient.PurchaseUnit}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="flex items-center">
                       <div className="text-sm text-gray-900">
-                        {ingredient.usageUnit}
+                        {ingredient.UsageUnit}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="flex items-center">
                       <div className="text-sm text-gray-900">
-                        {ingredient.purchaseCost}
+                        {ingredient.PurchaseCost}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="flex items-center">
                       <div className="text-sm text-gray-900">
-                        {ingredient.usageCost}
+                        {ingredient.UsageCost}
                       </div>
                     </div>
                   </td>
@@ -283,7 +282,7 @@ function IngredientList() {
                         <FaEdit size={16} />
                       </button>
                       <button
-                        onClick={() => handleDelete(ingredient.ingredientId)}
+                        onClick={() => handleDelete(ingredient.IngredientId)}
                         className="text-red-600 hover:text-red-900"
                         title="Delete ingredient"
                       >
@@ -373,7 +372,7 @@ function IngredientList() {
                     onClick={() => handlePageChange(page)}
                     className={`px-3 py-1 text-sm border rounded-md ${
                       page === currentPage
-                        ? "bg-blue-600 text-white border-blue-600"
+                        ? "bg-blue-950 text-white border-blue-600"
                         : "border-gray-300 hover:bg-gray-50"
                     }`}
                   >

@@ -14,7 +14,7 @@ export const ingredientApi = apiBase.injectEndpoints({
     //   query: (id) => `/ingredients/${id}`,
     //   providesTags: (_r, _e, id) => [{ type: "Ingredient", id }],
     // }),
-    createIngredient: b.mutation<Ingredient, Omit<Ingredient, "id">>({
+    createIngredient: b.mutation<Ingredient, Omit<Ingredient, "IngredientId">>({
       query: (body) => ({
         url: `/ingredients`,
         method: "POST",
@@ -39,7 +39,10 @@ export const ingredientApi = apiBase.injectEndpoints({
         url: `/ingredients/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: (_r, _e, id) => [{ type: "Ingredient", id }, "Ingredient"],
+      invalidatesTags: (_r, _e, id) => [
+        { type: "Ingredient", id },
+        "Ingredient",
+      ],
     }),
   }),
   overrideExisting: false,

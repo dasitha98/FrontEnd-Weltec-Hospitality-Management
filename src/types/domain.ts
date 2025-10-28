@@ -1,9 +1,9 @@
 export type ID = string;
 
 export interface Student {
-  id: ID;
-  name: string;
-  email: string;
+  Id: ID;
+  Name: string;
+  Email: string;
 }
 
 // export interface Class {
@@ -22,83 +22,64 @@ export interface Student {
 // }
 
 export interface Food {
-  id: ID;
-  name: string;
-}
-
-export interface Recipe {
-  id: ID;
-  name: string;
-  description?: string;
-  reference?: string;
-  category: string;
-  prepTime: number; // in minutes
-  cookTime: number; // in minutes
-  servings: number;
-  difficulty: "Easy" | "Medium" | "Hard";
-  ingredients: RecipeIngredient[];
-  instructions: string[];
-  nutritionInfo?: {
-    calories?: number;
-    protein?: number;
-    carbs?: number;
-    fat?: number;
-  };
-  tags?: string[];
-  imageUrl?: string;
-  createdBy?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  Id: ID;
+  Name: string;
 }
 
 export interface RecipeIngredient {
-  ingredientId: string;
-  ingredientName: string;
-  quantity: number;
-  unit: string;
-  notes?: string;
-  cost?: number;
+  IngredientId: string;
+  IngredientIdAlternate?: string; // Backward compatibility
+  IngredientName: string;
+  IngredientNameAlternate?: string; // Backward compatibility
+  Quantity: number;
+  Unit: string;
+  Notes?: string;
+  NotesAlternate?: string; // Backward compatibility
+  Cost?: number;
+  Ingredient?: Ingredient;
 }
 
 export interface User {
-  id: ID;
-  name: string;
-  email: string;
-  address: string;
-  contactNo: string;
-  password: string;
-  role: "admin" | "instructor" | "student";
-  isActive: boolean;
-  createdAt?: string;
-  updatedAt?: string;
+  Id: ID;
+  Name: string;
+  Email: string;
+  Address: string;
+  ContactNo: string;
+  Password: string;
+  Role: "admin" | "instructor" | "student";
+  IsActive: boolean;
+  CreatedAt?: string;
+  UpdatedAt?: string;
 }
 
 export interface Supplier {
-  supplierId?: ID;
-  name?: string;
-  repName?: string;
-  address?: string;
-  contactNumber?: string;
-  email?: string;
-  notes?: string;
-  createdAt?: string;
+  SupplierId?: ID;
+  Name?: string;
+  RepName?: string;
+  Address?: string;
+  ContactNumber?: string;
+  Email?: string;
+  Notes?: string;
+  CreatedAt?: string;
 }
 
 export interface Ingredient {
-  ingredientId?: ID;
-  name: string;
-  description?: string;
-  supplierId?: ID;
-  store?: string;
-  purchaseQuantity?: number;
-  purchaseUnit?: string;
-  usageUnit?: string;
-  purchaseCost?: number;
-  usageCost?: number;
-  createdAt?: string;
+  IngredientId?: ID;
+  Name: string;
+  Description?: string;
+  SupplierId?: ID;
+  Store?: string;
+  PurchaseQuantity?: number;
+  PurchaseUnit?: string;
+  UsageUnit?: string;
+  PurchaseCost?: number;
+  UsageCost?: number;
+  CreatedAt?: string;
 }
 
 export interface Recipe {
+  RecipeId?: ID;
+  Name?: string;
   Description?: string;
   Yield?: number;
   RLevel?: string;
@@ -106,11 +87,13 @@ export interface Recipe {
   TotalCost?: number;
   Year?: string;
   IngredientId?: string;
+  IngredientIdAlternate?: string; // Backward compatibility
+  RecipeIngredients?: RecipeIngredient[];
+  IngredientList?: RecipeIngredient[];
   Quantity?: number;
-  Unit?: string;
-  Cost?: number;
-  createdAt?: string;
-  updatedAt?: string;
+  QuantityAlternate?: number; // Backward compatibility
+  CreatedAt?: string;
+  UpdatedAt?: string;
 }
 
 export interface Class {
@@ -124,6 +107,6 @@ export interface Class {
   SQuantity?: number;
   RReference?: string;
   UnitCost?: number;
-  createdAt?: string;
-  updatedAt?: string;
+  CreatedAt?: string;
+  UpdatedAt?: string;
 }

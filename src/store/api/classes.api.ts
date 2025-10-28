@@ -11,7 +11,7 @@ export const classesApi = apiBase.injectEndpoints({
       query: (id) => `/classes/${id}`,
       providesTags: (_r, _e, id) => [{ type: "Classes", id }],
     }),
-    createClass: b.mutation<Class, Omit<Class, "id">>({
+    createClass: b.mutation<Class, Omit<Class, "ClassID">>({
       query: (body) => ({ url: "/classes", method: "POST", body }),
       invalidatesTags: ["Classes"],
     }),

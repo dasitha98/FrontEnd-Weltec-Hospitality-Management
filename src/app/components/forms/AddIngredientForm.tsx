@@ -10,7 +10,7 @@ import React, { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
 
 interface AddIngredientFormProps {
-  onSubmit: (data: Omit<Ingredient, "id">) => void;
+  onSubmit: (data: Omit<Ingredient, "IngredientId">) => void;
   onCancel: () => void;
   initialData?: Partial<Ingredient>;
   isEditing?: boolean;
@@ -19,38 +19,28 @@ interface AddIngredientFormProps {
 }
 
 interface FormData {
-  id: string;
-  name: string;
-  description: string;
-  supplierId: string;
-  store: string;
-  purchaseQuantity: number;
-  purchaseUnit: string;
-  usageUnit: string;
-  purchaseCost: number;
-  usageCost: number;
+  Name: string;
+  Description: string;
+  SupplierId: string;
+  Store: string;
+  PurchaseQuantity: number;
+  PurchaseUnit: string;
+  UsageUnit: string;
+  PurchaseCost: number;
+  UsageCost: number;
 }
 
 interface FormErrors {
-  name?: string;
-  description?: string;
-  supplierId?: string;
-  store?: string;
-  purchaseQuantity?: string;
-  purchaseUnit?: string;
-  usageUnit?: string;
-  purchaseCost?: string;
-  usageCost?: string;
+  Name?: string;
+  Description?: string;
+  SupplierId?: string;
+  Store?: string;
+  PurchaseQuantity?: string;
+  PurchaseUnit?: string;
+  UsageUnit?: string;
+  PurchaseCost?: string;
+  UsageCost?: string;
 }
-
-const SUPPLIER_OPTIONS = [
-  { value: "Supplier A", label: "Supplier A" },
-  { value: "Supplier B", label: "Supplier B" },
-  { value: "Supplier C", label: "Supplier C" },
-  { value: "Local Market", label: "Local Market" },
-  { value: "Wholesale", label: "Wholesale" },
-  { value: "Other", label: "Other" },
-];
 
 const STORE_OPTIONS = [
   { value: "Main Store", label: "Main Store" },
@@ -98,16 +88,15 @@ export default function AddIngredientForm({
   const { data } = useListSupplierQuery();
 
   const [formData, setFormData] = useState<FormData>({
-    id: "",
-    name: "",
-    description: "",
-    supplierId: "",
-    store: "",
-    purchaseQuantity: 0,
-    purchaseUnit: "",
-    usageUnit: "",
-    purchaseCost: 0,
-    usageCost: 0,
+    Name: "",
+    Description: "",
+    SupplierId: "",
+    Store: "",
+    PurchaseQuantity: 0,
+    PurchaseUnit: "",
+    UsageUnit: "",
+    PurchaseCost: 0,
+    UsageCost: 0,
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -116,16 +105,15 @@ export default function AddIngredientForm({
   useEffect(() => {
     if (initialData) {
       setFormData({
-        id: initialData.ingredientId || "",
-        name: initialData.name || "",
-        description: initialData.description || "",
-        supplierId: initialData.supplierId || "",
-        store: initialData.store || "",
-        purchaseQuantity: initialData.purchaseQuantity || 0,
-        purchaseUnit: initialData.purchaseUnit || "",
-        usageUnit: initialData.usageUnit || "",
-        purchaseCost: initialData.purchaseCost || 0,
-        usageCost: initialData.usageCost || 0,
+        Name: initialData.Name || "",
+        Description: initialData.Description || "",
+        SupplierId: initialData.SupplierId || "",
+        Store: initialData.Store || "",
+        PurchaseQuantity: initialData.PurchaseQuantity || 0,
+        PurchaseUnit: initialData.PurchaseUnit || "",
+        UsageUnit: initialData.UsageUnit || "",
+        PurchaseCost: initialData.PurchaseCost || 0,
+        UsageCost: initialData.UsageCost || 0,
       });
     }
   }, [initialData]);
@@ -153,47 +141,47 @@ export default function AddIngredientForm({
     const newErrors: FormErrors = {};
 
     // Required field validations
-    if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
+    if (!formData.Name.trim()) {
+      newErrors.Name = "Name is required";
     }
 
-    if (!formData.supplierId) {
-      newErrors.supplierId = "Supplier is required";
+    if (!formData.SupplierId) {
+      newErrors.SupplierId = "Supplier is required";
     }
 
-    if (!formData.store) {
-      newErrors.store = "Store is required";
+    if (!formData.Store) {
+      newErrors.Store = "Store is required";
     }
 
-    if (!formData.purchaseQuantity) {
-      newErrors.purchaseQuantity = "Purchase Qty is required";
+    if (!formData.PurchaseQuantity) {
+      newErrors.PurchaseQuantity = "Purchase Qty is required";
     } else {
-      const quantity = formData.purchaseQuantity;
-      if (isNaN(quantity) || quantity <= 0) {
-        newErrors.purchaseQuantity = "Purchase Qty must be a positive number";
+      const Quantity = formData.PurchaseQuantity;
+      if (isNaN(Quantity) || Quantity <= 0) {
+        newErrors.PurchaseQuantity = "Purchase Qty must be a positive number";
       }
     }
 
-    if (!formData.purchaseUnit) {
-      newErrors.purchaseUnit = "Purchase Unit is required";
+    if (!formData.PurchaseUnit) {
+      newErrors.PurchaseUnit = "Purchase Unit is required";
     }
 
-    if (!formData.usageUnit) {
-      newErrors.usageUnit = "Usage Unit is required";
+    if (!formData.UsageUnit) {
+      newErrors.UsageUnit = "Usage Unit is required";
     }
 
     // Optional field validations
-    if (formData.purchaseCost) {
-      const cost = formData.purchaseCost;
-      if (isNaN(cost) || cost < 0) {
-        newErrors.purchaseCost = "Purchase Cost must be a non-negative number";
+    if (formData.PurchaseCost) {
+      const Cost = formData.PurchaseCost;
+      if (isNaN(Cost) || Cost < 0) {
+        newErrors.PurchaseCost = "Purchase Cost must be a non-negative number";
       }
     }
 
-    if (formData.usageCost) {
-      const cost = formData.usageCost;
-      if (isNaN(cost) || cost < 0) {
-        newErrors.usageCost = "Usage Cost must be a non-negative number";
+    if (formData.UsageCost) {
+      const Cost = formData.UsageCost;
+      if (isNaN(Cost) || Cost < 0) {
+        newErrors.UsageCost = "Usage Cost must be a non-negative number";
       }
     }
 
@@ -204,9 +192,11 @@ export default function AddIngredientForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      console.log("formData", formData);
-      if (isEditing) {
-        await UpdateIngredient(formData).unwrap();
+      if (isEditing && initialData?.IngredientId) {
+        await UpdateIngredient({
+          id: initialData.IngredientId,
+          ...formData,
+        }).unwrap();
       } else {
         await CreateIngredient(formData).unwrap();
       }
@@ -215,16 +205,15 @@ export default function AddIngredientForm({
 
   const handleReset = () => {
     setFormData({
-      id: "",
-      name: "",
-      description: "",
-      supplierId: "",
-      store: "",
-      purchaseQuantity: 0,
-      purchaseUnit: "",
-      usageUnit: "",
-      purchaseCost: 0,
-      usageCost: 0,
+      Name: "",
+      Description: "",
+      SupplierId: "",
+      Store: "",
+      PurchaseQuantity: 0,
+      PurchaseUnit: "",
+      UsageUnit: "",
+      PurchaseCost: 0,
+      UsageCost: 0,
     });
     setErrors({});
   };
@@ -259,17 +248,17 @@ export default function AddIngredientForm({
           <input
             id="name"
             type="text"
-            value={formData.name}
-            onChange={(e) => handleInputChange("name", e.target.value)}
+            value={formData.Name}
+            onChange={(e) => handleInputChange("Name", e.target.value)}
             placeholder="Enter ingredient name"
             className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-              errors.name
+              errors.Name
                 ? "border-red-500 bg-red-50"
                 : "border-gray-300 hover:border-gray-400"
             }`}
           />
-          {errors.name && (
-            <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+          {errors.Name && (
+            <p className="mt-1 text-sm text-red-600">{errors.Name}</p>
           )}
         </div>
 
@@ -283,8 +272,8 @@ export default function AddIngredientForm({
           </label>
           <textarea
             id="description"
-            value={formData.description}
-            onChange={(e) => handleInputChange("description", e.target.value)}
+            value={formData.Description}
+            onChange={(e) => handleInputChange("Description", e.target.value)}
             placeholder="Enter detailed description of the ingredient"
             rows={2}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors hover:border-gray-400 resize-none"
@@ -302,23 +291,23 @@ export default function AddIngredientForm({
             </label>
             <select
               id="supplierId"
-              value={formData.supplierId}
-              onChange={(e) => handleInputChange("supplierId", e.target.value)}
+              value={formData.SupplierId}
+              onChange={(e) => handleInputChange("SupplierId", e.target.value)}
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                errors.supplierId
+                errors.SupplierId
                   ? "border-red-500 bg-red-50"
                   : "border-gray-300 hover:border-gray-400"
               }`}
             >
               <option value="">Select Supplier</option>
               {data?.map((option) => (
-                <option key={option.supplierId} value={option.supplierId}>
-                  {option?.name}
+                <option key={option.SupplierId} value={option.SupplierId}>
+                  {option?.Name}
                 </option>
               ))}
             </select>
-            {errors.supplierId && (
-              <p className="mt-1 text-sm text-red-600">{errors.supplierId}</p>
+            {errors.SupplierId && (
+              <p className="mt-1 text-sm text-red-600">{errors.SupplierId}</p>
             )}
           </div>
 
@@ -331,10 +320,10 @@ export default function AddIngredientForm({
             </label>
             <select
               id="store"
-              value={formData.store}
-              onChange={(e) => handleInputChange("store", e.target.value)}
+              value={formData.Store}
+              onChange={(e) => handleInputChange("Store", e.target.value)}
               className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                errors.store
+                errors.Store
                   ? "border-red-500 bg-red-50"
                   : "border-gray-300 hover:border-gray-400"
               }`}
@@ -346,8 +335,8 @@ export default function AddIngredientForm({
                 </option>
               ))}
             </select>
-            {errors.store && (
-              <p className="mt-1 text-sm text-red-600">{errors.store}</p>
+            {errors.Store && (
+              <p className="mt-1 text-sm text-red-600">{errors.Store}</p>
             )}
           </div>
         </div>
@@ -370,20 +359,20 @@ export default function AddIngredientForm({
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.purchaseQuantity}
+                value={formData.PurchaseQuantity}
                 onChange={(e) =>
-                  handleInputChange("purchaseQuantity", e.target.value)
+                  handleInputChange("PurchaseQuantity", e.target.value)
                 }
                 placeholder="0.00"
                 className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                  errors.purchaseQuantity
+                  errors.PurchaseQuantity
                     ? "border-red-500 bg-red-50"
                     : "border-gray-300 hover:border-gray-400"
                 }`}
               />
-              {errors.purchaseQuantity && (
+              {errors.PurchaseQuantity && (
                 <p className="mt-1 text-sm text-red-600">
-                  {errors.purchaseQuantity}
+                  {errors.PurchaseQuantity}
                 </p>
               )}
             </div>
@@ -397,12 +386,12 @@ export default function AddIngredientForm({
               </label>
               <select
                 id="purchaseUnit"
-                value={formData.purchaseUnit}
+                value={formData.PurchaseUnit}
                 onChange={(e) =>
-                  handleInputChange("purchaseUnit", e.target.value)
+                  handleInputChange("PurchaseUnit", e.target.value)
                 }
                 className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                  errors.purchaseUnit
+                  errors.PurchaseUnit
                     ? "border-red-500 bg-red-50"
                     : "border-gray-300 hover:border-gray-400"
                 }`}
@@ -414,9 +403,9 @@ export default function AddIngredientForm({
                   </option>
                 ))}
               </select>
-              {errors.purchaseUnit && (
+              {errors.PurchaseUnit && (
                 <p className="mt-1 text-sm text-red-600">
-                  {errors.purchaseUnit}
+                  {errors.PurchaseUnit}
                 </p>
               )}
             </div>
@@ -430,10 +419,10 @@ export default function AddIngredientForm({
               </label>
               <select
                 id="usageUnit"
-                value={formData.usageUnit}
-                onChange={(e) => handleInputChange("usageUnit", e.target.value)}
+                value={formData.UsageUnit}
+                onChange={(e) => handleInputChange("UsageUnit", e.target.value)}
                 className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                  errors.usageUnit
+                  errors.UsageUnit
                     ? "border-red-500 bg-red-50"
                     : "border-gray-300 hover:border-gray-400"
                 }`}
@@ -445,8 +434,8 @@ export default function AddIngredientForm({
                   </option>
                 ))}
               </select>
-              {errors.usageUnit && (
-                <p className="mt-1 text-sm text-red-600">{errors.usageUnit}</p>
+              {errors.UsageUnit && (
+                <p className="mt-1 text-sm text-red-600">{errors.UsageUnit}</p>
               )}
             </div>
           </div>
@@ -474,21 +463,21 @@ export default function AddIngredientForm({
                   type="number"
                   step="0.01"
                   min="0"
-                  value={formData.purchaseCost}
+                  value={formData.PurchaseCost}
                   onChange={(e) =>
-                    handleInputChange("purchaseCost", e.target.value)
+                    handleInputChange("PurchaseCost", e.target.value)
                   }
                   placeholder="0.00"
                   className={`w-full pl-8 pr-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                    errors.purchaseCost
+                    errors.PurchaseCost
                       ? "border-red-500 bg-red-50"
                       : "border-gray-300 hover:border-gray-400"
                   }`}
                 />
               </div>
-              {errors.purchaseCost && (
+              {errors.PurchaseCost && (
                 <p className="mt-1 text-sm text-red-600">
-                  {errors.purchaseCost}
+                  {errors.PurchaseCost}
                 </p>
               )}
             </div>
@@ -509,20 +498,20 @@ export default function AddIngredientForm({
                   type="number"
                   step="0.01"
                   min="0"
-                  value={formData.usageCost}
+                  value={formData.UsageCost}
                   onChange={(e) =>
-                    handleInputChange("usageCost", e.target.value)
+                    handleInputChange("UsageCost", e.target.value)
                   }
                   placeholder="0.00"
                   className={`w-full pl-8 pr-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                    errors.usageCost
+                    errors.UsageCost
                       ? "border-red-500 bg-red-50"
                       : "border-gray-300 hover:border-gray-400"
                   }`}
                 />
               </div>
-              {errors.usageCost && (
-                <p className="mt-1 text-sm text-red-600">{errors.usageCost}</p>
+              {errors.UsageCost && (
+                <p className="mt-1 text-sm text-red-600">{errors.UsageCost}</p>
               )}
             </div>
           </div>
@@ -539,7 +528,7 @@ export default function AddIngredientForm({
           </button>
           <button
             type="submit"
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-sm"
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-950 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-sm"
           >
             {submitButtonText}
           </button>

@@ -35,7 +35,7 @@ export default function RootLayout({
             <Sidebar />
           </div>
           <div className="main-content">
-            <div className="header bg-blue-600 text-white">
+            <div className="header bg-blue-950 text-white">
               School Of Hospitality
             </div>
             <div className="content">

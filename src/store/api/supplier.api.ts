@@ -14,7 +14,7 @@ export const supplierApi = apiBase.injectEndpoints({
     //   query: (id) => `/suppliers/${id}`,
     //   providesTags: (_r, _e, id) => [{ type: "Supplier", id }],
     // }),
-    createSupplier: b.mutation<Supplier, Omit<Supplier, "id">>({
+    createSupplier: b.mutation<Supplier, Omit<Supplier, "SupplierId">>({
       query: (body) => ({
         url: `/suppliers`,
         method: "POST",
