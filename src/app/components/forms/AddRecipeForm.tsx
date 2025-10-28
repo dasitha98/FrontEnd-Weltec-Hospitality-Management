@@ -7,6 +7,7 @@ import {
   useUpdateRecipeMutation,
 } from "@/store/api/recipes.api";
 import { useListIngredientQuery } from "@/store/api/ingredient.api";
+import { FaTimes } from "react-icons/fa";
 
 interface AddRecipeFormProps {
   onSubmit: (data: Omit<Recipe, "RecipeId">) => void;
@@ -431,8 +432,25 @@ export default function AddRecipeForm({
       return prev.filter((_, i) => i !== index);
     });
   };
+  useEffect(() => {
+    if (updateSuccess || createSuccess) {
+      onCancel();
+    }
+  }, [updateSuccess, createSuccess]);
+  
   return (
     <div className="flex flex-col bg-white">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">
+          {isEditing ? "Edit Recipe" : "Add New Recipe"}
+        </h2>
+        <button
+          onClick={onCancel}
+          className="text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <FaTimes size={24} />
+        </button>
+      </div>
       <div className="flex-1 overflow-y-auto hide-scrollbar p-4 max-h-[80vh]">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* General Recipe Information */}
