@@ -103,3 +103,14 @@ export interface ClassRecipe {
   UnitCost?: number;
   TotalCost?: number;
 }
+
+export interface Auth {
+  UserId?: ID;
+  Name?: string;
+  Email?: string;
+  ContactNumber?: number;
+  Password?: string;
+  Role?: string;
+  Status?: string;
+  CreatedAt?: string;
+}

@@ -10,6 +10,7 @@ import studentsUI from "./slices/students.slice";
 import classesUI from "./slices/classes.slice";
 import foodsUI from "./slices/foods.slice";
 import recipesUI from "./slices/recipes.slice";
+import authUI from "./slices/auth.slice";
 
 // 1) Root reducer (all slices combined)
 const rootReducer = combineReducers({
@@ -19,6 +20,7 @@ const rootReducer = combineReducers({
   classesUI,
   foodsUI,
   recipesUI,
+  authUI,
   [apiBase.reducerPath]: apiBase.reducer,
 });
 

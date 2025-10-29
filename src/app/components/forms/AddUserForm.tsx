@@ -5,19 +5,22 @@ import {
   FaTimes,
   FaUser,
   FaEnvelope,
-  FaMapMarkerAlt,
   FaPhone,
   FaLock,
   FaUserTag,
   FaToggleOn,
   FaToggleOff,
 } from "react-icons/fa";
-import type { User } from "@/types/domain";
+import {
+  useCreateAuthMutation,
+  useUpdateAuthMutation,
+} from "@/store/api/auth.api";
+import type { Auth } from "@/types/domain";
 
 interface AddUserFormProps {
-  onSubmit: (data: Omit<User, "Id">) => void;
+  onSubmit: (data: Omit<Auth, "UserId">) => void;
   onCancel: () => void;
-  initialData?: User;
+  initialData?: Auth;
   isEditing?: boolean;
   submitButtonText?: string;
   cancelButtonText?: string;
@@ -31,14 +34,25 @@ export default function AddUserForm({
   submitButtonText = "Add User",
   cancelButtonText = "Cancel",
 }: AddUserFormProps) {
+  const [UpdateAuth, { isLoading, isSuccess: updateSuccess, isError, error }] =
+    useUpdateAuthMutation();
+  const [
+    CreateAuth,
+    {
+      isLoading: isCreating,
+      isSuccess: createSuccess,
+      isError: createError,
+      error: createErrorData,
+    },
+  ] = useCreateAuthMutation();
+
   const [formData, setFormData] = useState({
     Name: "",
     Email: "",
-    Address: "",
-    ContactNo: "",
+    ContactNumber: "",
     Password: "",
-    Role: "student" as "admin" | "instructor" | "student",
-    IsActive: true,
+    Role: "student",
+    Status: "Active",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -48,40 +62,40 @@ export default function AddUserForm({
       setFormData({
         Name: initialData.Name || "",
         Email: initialData.Email || "",
-        Address: initialData.Address || "",
-        ContactNo: initialData.ContactNo || "",
+        ContactNumber: initialData.ContactNumber?.toString() || "",
         Password: "", // Don't pre-fill password for security
         Role: initialData.Role || "student",
-        IsActive: initialData.IsActive ?? true,
+        Status: initialData.Status || "Active",
       });
     }
   }, [initialData]);
 
+  useEffect(() => {
+    if (updateSuccess || createSuccess) {
+      onCancel();
+    }
+  }, [updateSuccess, createSuccess, onCancel]);
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.Name.trim()) {
+    if (!formData.Name?.trim()) {
       newErrors.Name = "Name is required";
     }
 
-    if (!formData.Email.trim()) {
+    if (!formData.Email?.trim()) {
       newErrors.Email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.Email)) {
       newErrors.Email = "Please enter a valid email address";
     }
 
-    if (!formData.Address.trim()) {
-      newErrors.Address = "Address is required";
-    }
-
-    if (!formData.ContactNo.trim()) {
-      newErrors.ContactNo = "Contact number is required";
-    } else if (
-      !/^[\+]?[1-9][\d]{0,15}$/.test(
-        formData.ContactNo.replace(/[\s\-\(\)]/g, "")
-      )
-    ) {
-      newErrors.ContactNo = "Please enter a valid contact number";
+    if (!formData.ContactNumber.trim()) {
+      newErrors.ContactNumber = "Contact number is required";
+    } else {
+      const cleanedNumber = formData.ContactNumber.replace(/[\s\-\(\)]/g, "");
+      if (!/^[\+]?[1-9][\d]{0,15}$/.test(cleanedNumber)) {
+        newErrors.ContactNumber = "Please enter a valid contact number";
+      }
     }
 
     if (!isEditing && !formData.Password.trim()) {
@@ -94,14 +108,33 @@ export default function AddUserForm({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
+      const cleanedNumber = formData.ContactNumber.replace(/[\s\-\(\)]/g, "");
+      const contactNumber = parseFloat(cleanedNumber);
+
       const submitData = {
-        ...formData,
-        Password: formData.Password || "defaultPassword123", // For editing, use default if password not provided
+        Name: formData.Name || undefined,
+        Email: formData.Email || undefined,
+        ContactNumber: isNaN(contactNumber) ? undefined : contactNumber,
+        Password: formData.Password || undefined,
+        Role: formData.Role || undefined,
+        Status: formData.Status || undefined,
       };
-      onSubmit(submitData);
+
+      try {
+        if (isEditing && initialData?.UserId) {
+          await UpdateAuth({
+            id: initialData.UserId,
+            ...submitData,
+          }).unwrap();
+        } else {
+          await CreateAuth(submitData).unwrap();
+        }
+      } catch (error) {
+        console.error("Error saving user:", error);
+      }
     }
   };
 
@@ -178,43 +211,25 @@ export default function AddUserForm({
             )}
           </div>
 
-          {/* Address */}
-          <div className="space-y-2 md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700">
-              <FaMapMarkerAlt className="inline mr-2" size={14} />
-              Address
-            </label>
-            <input
-              type="text"
-              value={formData.Address}
-              onChange={(e) => handleInputChange("Address", e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.Address ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="Enter full address"
-            />
-            {errors.Address && (
-              <p className="text-red-500 text-sm">{errors.Address}</p>
-            )}
-          </div>
-
           {/* Contact Number */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">
               <FaPhone className="inline mr-2" size={14} />
-              Contact No
+              Contact Number
             </label>
             <input
               type="tel"
-              value={formData.ContactNo}
-              onChange={(e) => handleInputChange("ContactNo", e.target.value)}
+              value={formData.ContactNumber}
+              onChange={(e) =>
+                handleInputChange("ContactNumber", e.target.value)
+              }
               className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.ContactNo ? "border-red-500" : "border-gray-300"
+                errors.ContactNumber ? "border-red-500" : "border-gray-300"
               }`}
               placeholder="Enter contact number"
             />
-            {errors.ContactNo && (
-              <p className="text-red-500 text-sm">{errors.ContactNo}</p>
+            {errors.ContactNumber && (
+              <p className="text-red-500 text-sm">{errors.ContactNumber}</p>
             )}
           </div>
 
@@ -268,20 +283,25 @@ export default function AddUserForm({
               <button
                 type="button"
                 onClick={() =>
-                  handleInputChange("IsActive", !formData.IsActive)
+                  handleInputChange(
+                    "Status",
+                    formData.Status === "Active" ? "Inactive" : "Active"
+                  )
                 }
                 className={`flex items-center space-x-2 px-3 py-2 rounded-md border transition-colors ${
-                  formData.IsActive
+                  formData.Status === "Active"
                     ? "bg-green-50 border-green-200 text-green-700"
                     : "bg-red-50 border-red-200 text-red-700"
                 }`}
               >
-                {formData.IsActive ? (
+                {formData.Status === "Active" ? (
                   <FaToggleOn size={16} />
                 ) : (
                   <FaToggleOff size={16} />
                 )}
-                <span>{formData.IsActive ? "Active" : "Inactive"}</span>
+                <span>
+                  {formData.Status === "Active" ? "Active" : "Inactive"}
+                </span>
               </button>
             </div>
           </div>
@@ -298,9 +318,10 @@ export default function AddUserForm({
           </button>
           <button
             type="submit"
-            className="px-6 py-2 bg-blue-950 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            disabled={isLoading || isCreating}
+            className="px-6 py-2 bg-blue-950 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {submitButtonText}
+            {isLoading || isCreating ? "Saving..." : submitButtonText}
           </button>
         </div>
       </form>
