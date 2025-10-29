@@ -11,14 +11,14 @@ export const classesApi = apiBase.injectEndpoints({
       query: (id) => `/classes/${id}`,
       providesTags: (_r, _e, id) => [{ type: "Classes", id }],
     }),
-    createClass: b.mutation<Class, Omit<Class, "ClassID">>({
+    createClass: b.mutation<Class, Omit<Class, "ClassId">>({
       query: (body) => ({ url: "/classes", method: "POST", body }),
       invalidatesTags: ["Classes"],
     }),
     updateClass: b.mutation<Class, Partial<Class> & { id: ID }>({
       query: ({ id, ...patch }) => ({
         url: `/classes/${id}`,
-        method: "PATCH",
+        method: "PUT",
         body: patch,
       }),
       invalidatesTags: (_r, _e, { id }) => [{ type: "Classes", id }, "Classes"],

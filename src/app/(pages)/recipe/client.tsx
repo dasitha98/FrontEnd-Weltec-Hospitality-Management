@@ -32,7 +32,7 @@ export default function RecipeClient({
   );
 }
 
-function RecipeList() {
+export function RecipeList() {
   const { data, isLoading } = useListRecipeQuery();
   const [deleteRecipe, { isSuccess, isError, error }] =
     useDeleteRecipeMutation();

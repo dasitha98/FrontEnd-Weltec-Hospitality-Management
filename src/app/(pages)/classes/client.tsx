@@ -43,15 +43,15 @@ function ClassList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
 
-  const handleSubmit = (data: Omit<Class, "ClassID">) => {
+  const handleSubmit = (data: Omit<Class, "ClassId">) => {
     if (editingClass) {
       // Update existing class
       setClasses((prev: any) =>
         prev.map((Nclass: any) =>
-          Nclass.ClassID === editingClass.ClassID
+          Nclass.ClassId === editingClass.ClassId
             ? {
                 ...data,
-                ClassID: editingClass.ClassID,
+                ClassId: editingClass.ClassId,
                 UpdatedAt: new Date().toISOString(),
               }
             : Nclass
@@ -61,7 +61,7 @@ function ClassList() {
       // Add new class
       const newClass: Class = {
         ...data,
-        ClassID: Date.now().toString(), // Simple ID generation for demo
+        ClassId: Date.now().toString(), // Simple ID generation for demo
         //CreatedAt: new Date().toISOString(),
         // UpdatedAt: new Date().toISOString(),
       };
@@ -77,8 +77,8 @@ function ClassList() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (ClassID: string | any) => {
-    await deleteClass(ClassID).unwrap();
+  const handleDelete = async (ClassId: string | any) => {
+    await deleteClass(ClassId).unwrap();
 
     // if (confirm("Are you sure you want to delete this supplier?")) {
     //   setSupplier((prev: any) =>
@@ -171,13 +171,19 @@ function ClassList() {
                   Instructor
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
+                  Description
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   No of Students
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
+                  Notes
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Location
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
-                  Reference
+                  Date
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Total Cost
@@ -190,7 +196,7 @@ function ClassList() {
             <tbody className="bg-white divide-y divide-gray-200">
               {data?.map((Nclass, index) => (
                 <tr
-                  key={Nclass.ClassID}
+                  key={Nclass.ClassId}
                   className={`h-16 ${
                     index % 2 === 0 ? "bg-gray-50" : "bg-white"
                   }`}
@@ -202,16 +208,18 @@ function ClassList() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="text-sm text-gray-900">
+                      {Nclass.Instructor}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
+                    <div className="text-sm text-gray-900">
                       {Nclass.Description || "N/A"}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
-                    {/* <div className="flex items-center">
-                      <FaUsers className="mr-2 text-gray-400" size={14} />
-                      <span className="text-sm font-medium text-gray-900">
-                        {class.noOfStudents}
-                      </span>
-                    </div> */}
+                    <div className="text-sm font-medium text-gray-900">
+                      {Nclass.SQuantity ?? 0}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="text-sm text-gray-900">{Nclass.Notes}</div>
@@ -222,9 +230,56 @@ function ClassList() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
-                    {/* <div className="text-sm font-medium text-gray-900">
-                      ${class.totalCost.toFixed(2)}
-                    </div> */}
+                    <div className="text-sm text-gray-900">
+                      {Nclass.ClassDateTime
+                        ? (() => {
+                            const date = new Date(Nclass.ClassDateTime);
+                            return (
+                              <>
+                                <div className="font-medium">
+                                  {date.toLocaleDateString("en-US", {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric",
+                                  })}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {date.toLocaleTimeString("en-US", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                  })}
+                                </div>
+                              </>
+                            );
+                          })()
+                        : "N/A"}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
+                    <div className="text-sm font-medium text-gray-900">
+                      {(() => {
+                        const sQty = Number(Nclass.SQuantity) || 0;
+                        const total = (Nclass.RecipeList || []).reduce(
+                          (sum, r) => {
+                            const unit = r.UnitCost || 0;
+                            const rowTotal =
+                              typeof r.TotalCost === "number" &&
+                              !Number.isNaN(r.TotalCost)
+                                ? r.TotalCost
+                                : typeof unit === "number" &&
+                                  Number.isFinite(unit)
+                                ? unit * sQty
+                                : 0;
+                            return (
+                              sum + (Number.isFinite(rowTotal) ? rowTotal : 0)
+                            );
+                          },
+                          0
+                        );
+                        return `$${total.toFixed(2)}`;
+                      })()}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium align-middle">
                     <div className="flex space-x-2">
@@ -236,7 +291,7 @@ function ClassList() {
                         <FaEdit size={16} />
                       </button>
                       <button
-                        onClick={() => handleDelete(Nclass.ClassID)}
+                        onClick={() => handleDelete(Nclass.ClassId)}
                         className="text-red-600 hover:text-red-900"
                         title="Delete class"
                       >
@@ -257,6 +312,9 @@ function ClassList() {
                       : "bg-white"
                   }`}
                 >
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
+                    <div className="text-sm text-gray-400">&nbsp;</div>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="text-sm text-gray-400">&nbsp;</div>
                   </td>
@@ -360,7 +418,7 @@ function ClassList() {
               <AddClassForm
                 onSubmit={handleSubmit}
                 onCancel={handleClose}
-                initialData={editingClass || undefined}
+                initialClassData={editingClass || undefined}
                 isEditing={!!editingClass}
                 submitButtonText={editingClass ? "Update Class" : "Add Class"}
                 cancelButtonText="Cancel"

@@ -1,12 +1,17 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import type { Class, Recipe } from "@/types/domain";
+import { useListRecipeQuery } from "@/store/api/recipes.api";
+import {
+  useCreateClassMutation,
+  useUpdateClassMutation,
+} from "@/store/api/classes.api";
+import type { Class } from "@/types/domain";
 
 interface AddClassFormProps {
-  onSubmit: (data: Omit<Class, "ClassID">) => void;
+  onSubmit: (data: Omit<Class, "ClassId">) => void;
   onCancel: () => void;
-  initialData?: Partial<Class>;
+  initialClassData?: Partial<Class>;
   isEditing?: boolean;
   submitButtonText?: string;
   cancelButtonText?: string;
@@ -24,8 +29,10 @@ interface RecipeEntry {
 
 interface FormData {
   name: string;
+  instructor: string;
   description: string;
   Notes: string;
+  sQuantity: string;
   location: string;
   dateTime: string;
   recipes: RecipeEntry[];
@@ -35,6 +42,7 @@ interface FormErrors {
   name?: string;
   description?: string;
   Notes?: string;
+  sQuantity?: string;
   location?: string;
   dateTime?: string;
   recipeValidation?: {
@@ -55,57 +63,111 @@ const LOCATION_OPTIONS = [
   { value: "Other", label: "Other" },
 ];
 
-// Mock recipe data - in real app, this would come from API
-const RECIPE_OPTIONS = [
-  { value: "recipe1", label: "Chicken Curry" },
-  { value: "recipe2", label: "Pasta Carbonara" },
-  { value: "recipe3", label: "Beef Stir Fry" },
-  { value: "recipe4", label: "Vegetable Soup" },
-  { value: "recipe5", label: "Fish and Chips" },
-];
+// Remove mock recipe data; use real API data instead
 
 export default function AddClassForm({
   onSubmit,
   onCancel,
-  initialData,
+  initialClassData,
   isEditing = false,
   submitButtonText = "Add Class",
   cancelButtonText = "Cancel",
 }: AddClassFormProps) {
+  const { data: recipeData, isLoading: recipesLoading } = useListRecipeQuery();
+  const [
+    CreateClass,
+    {
+      isLoading: isCreating,
+      isSuccess: createSuccess,
+      isError: createError,
+      error: createErrorData,
+    },
+  ] = useCreateClassMutation();
+  const [
+    UpdateClass,
+    { isLoading: isUpdating, isSuccess: updateSuccess, isError: updateError },
+  ] = useUpdateClassMutation();
+
   const [formData, setFormData] = useState<FormData>({
     name: "",
+    instructor: "",
     description: "",
     Notes: "",
+    sQuantity: "",
     location: "",
     dateTime: "",
-    recipes: [
-      {
-        id: Date.now().toString(),
-        recipeId: "",
-        recipeName: "",
-        noOfStudents: "",
-        reference: "",
-        unitCost: "",
-        totalCost: "",
-      },
-    ],
+    recipes: [],
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
+  const [editingRecipes, setEditingRecipes] = useState<RecipeEntry[]>([]);
 
-  // Initialize form data when initialData changes
+  // Helper to format Date to input[type="datetime-local"] string
+  const formatDateTimeLocal = (value?: Date | string): string => {
+    if (!value) return "";
+    const d = typeof value === "string" ? new Date(value) : value;
+    if (Number.isNaN(d.getTime())) return "";
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const yyyy = d.getFullYear();
+    const mm = pad(d.getMonth() + 1);
+    const dd = pad(d.getDate());
+    const hh = pad(d.getHours());
+    const mi = pad(d.getMinutes());
+    return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+  };
+
+  // Helper to format datetime-local input to ISO format "YYYY-MM-DDTHH:mm:ss"
+  const formatClassDateTime = (dateTimeString: string): string => {
+    if (!dateTimeString) return "";
+    // datetime-local format is "YYYY-MM-DDTHH:mm"
+    // Convert to "YYYY-MM-DDTHH:mm:ss" format
+    if (dateTimeString.length === 16) {
+      // Format: "2025-09-30T10:00" -> "2025-09-30T10:00:00"
+      return `${dateTimeString}:00`;
+    }
+    // If already has seconds, return as is (or format properly)
+    return dateTimeString;
+  };
+
+  // Initialize form data when initialClassData changes
   useEffect(() => {
-    if (initialData) {
+    if (initialClassData) {
+      // Populate recipes from RecipeList if available
+      const initialRecipes: RecipeEntry[] =
+        initialClassData.RecipeList && initialClassData.RecipeList.length > 0
+          ? initialClassData.RecipeList.map((classRecipe, idx) => {
+              // Find recipe name from recipeData
+              const recipe = (recipeData || []).find(
+                (r) => r.RecipeId === classRecipe.RecipeId
+              );
+
+              const unitCost = classRecipe.UnitCost || 0;
+              const totalCost = classRecipe.TotalCost || 0;
+
+              return {
+                id: classRecipe.ClassRecipeId || `${Date.now()}-${idx}`,
+                recipeId: classRecipe.RecipeId || "",
+                recipeName: recipe?.Name || "",
+                noOfStudents: "",
+                reference: classRecipe.RReference || "",
+                unitCost: unitCost ? unitCost.toString() : "",
+                totalCost: totalCost ? totalCost.toFixed(2) : "",
+              };
+            })
+          : [];
+
       setFormData({
-        name: initialData.name || "",
-        description: initialData.description || "",
-        Notes: "",
-        location: initialData.location || "",
-        dateTime: initialData.startDate || "",
-        recipes: [],
+        name: initialClassData.Name || "",
+        instructor: initialClassData.Instructor || "",
+        description: initialClassData.Description || "",
+        Notes: initialClassData.Notes || "",
+        sQuantity: initialClassData.SQuantity?.toString() || "",
+        location: initialClassData.Location || "",
+        dateTime: formatDateTimeLocal(initialClassData.ClassDateTime),
+        recipes: initialRecipes,
       });
     }
-  }, [initialData]);
+  }, [initialClassData, recipeData]);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({
@@ -137,19 +199,6 @@ export default function AddClassForm({
       isValid = false;
     }
 
-    if (!recipe.noOfStudents) {
-      newErrors.recipeValidation[index].noOfStudents =
-        "No of Students is required";
-      isValid = false;
-    } else {
-      const students = parseFloat(recipe.noOfStudents);
-      if (isNaN(students) || students <= 0) {
-        newErrors.recipeValidation[index].noOfStudents =
-          "No of Students must be a positive number";
-        isValid = false;
-      }
-    }
-
     if (!recipe.unitCost) {
       newErrors.recipeValidation[index].unitCost = "Unit Cost is required";
       isValid = false;
@@ -167,18 +216,7 @@ export default function AddClassForm({
   };
 
   const addRecipe = () => {
-    // Validate the last recipe before adding a new one
-    const lastRecipeIndex = formData.recipes.length - 1;
-    const lastRecipe = formData.recipes[lastRecipeIndex];
-
-    if (formData.recipes.length > 0 && lastRecipe) {
-      // Check if the last recipe has required fields filled
-      if (!validateRecipeRow(lastRecipe, lastRecipeIndex)) {
-        // Don't add new recipe if current one is incomplete
-        return;
-      }
-    }
-
+    // Add a new empty row for recipe editing
     const newRecipe: RecipeEntry = {
       id: Date.now().toString(),
       recipeId: "",
@@ -188,48 +226,36 @@ export default function AddClassForm({
       unitCost: "",
       totalCost: "",
     };
-    setFormData((prev) => ({
-      ...prev,
-      recipes: [...prev.recipes, newRecipe],
-    }));
+
+    console.log("Adding new recipe:", newRecipe);
+    console.log("Current editingRecipes before:", editingRecipes);
+
+    // Append the new row to the `editingRecipes` state
+    setEditingRecipes((prev) => {
+      const updated = [...prev, newRecipe];
+      console.log("Updated editingRecipes:", updated);
+      return updated;
+    });
   };
 
-  const removeRecipe = (recipeId: string) => {
-    // Don't allow removing the last row
-    if (formData.recipes.length <= 1) {
-      return;
-    }
-
-    setFormData((prev) => ({
-      ...prev,
-      recipes: prev.recipes.filter((recipe) => recipe.id !== recipeId),
-    }));
-  };
-
-  const updateRecipe = (
-    recipeId: string,
+  const updateEditingRecipe = (
+    index: number,
     field: keyof RecipeEntry,
     value: string
   ) => {
-    setFormData((prev) => ({
-      ...prev,
-      recipes: prev.recipes.map((recipe) => {
-        if (recipe.id === recipeId) {
+    console.log(`Updating editing recipe [${index}].${field} =`, value);
+
+    setEditingRecipes((prev) => {
+      const updated = prev.map((recipe, i) => {
+        if (i === index) {
           const updatedRecipe = { ...recipe, [field]: value };
 
-          // Calculate total Cost when relevant fields change
-          if (field === "noOfStudents" || field === "unitCost") {
-            const noOfStudents =
-              field === "noOfStudents"
-                ? parseFloat(value)
-                : parseFloat(recipe.noOfStudents);
-            const unitCost =
-              field === "unitCost"
-                ? parseFloat(value)
-                : parseFloat(recipe.unitCost);
-
-            if (!isNaN(noOfStudents) && !isNaN(unitCost)) {
-              updatedRecipe.totalCost = (noOfStudents * unitCost).toFixed(2);
+          // Calculate total Cost when unitCost changes
+          if (field === "unitCost") {
+            const unitCost = parseFloat(value);
+            if (!isNaN(unitCost) && unitCost >= 0) {
+              // Total Cost is the same as Unit Cost when no students field
+              updatedRecipe.totalCost = unitCost.toFixed(2);
             } else {
               updatedRecipe.totalCost = "";
             }
@@ -238,20 +264,66 @@ export default function AddClassForm({
           return updatedRecipe;
         }
         return recipe;
-      }),
+      });
+      console.log("Updated editingRecipes:", updated);
+      return updated;
+    });
+
+    // Clear validation error for this field when user starts typing
+    setErrors((prev) => ({
+      ...prev,
+      recipeValidation: {
+        ...prev.recipeValidation,
+        [index]: {
+          ...prev.recipeValidation?.[index],
+          [field]: undefined,
+        },
+      },
     }));
+  };
+
+  const updateSavedRecipe = (
+    index: number,
+    field: keyof RecipeEntry,
+    value: string
+  ) => {
+    console.log(`Updating saved recipe [${index}].${field} =`, value);
+
+    setFormData((prev) => {
+      const updated = {
+        ...prev,
+        recipes: prev.recipes.map((recipe, i) => {
+          if (i === index) {
+            const updatedRecipe = { ...recipe, [field]: value };
+
+            // Calculate total Cost when unitCost changes
+            if (field === "unitCost") {
+              const unitCost = parseFloat(value);
+              if (!isNaN(unitCost) && unitCost >= 0) {
+                // Total Cost is the same as Unit Cost when no students field
+                updatedRecipe.totalCost = unitCost.toFixed(2);
+              } else {
+                updatedRecipe.totalCost = "";
+              }
+            }
+
+            return updatedRecipe;
+          }
+          return recipe;
+        }),
+      };
+      console.log("Updated formData.recipes:", updated.recipes);
+      return updated;
+    });
 
     // Clear errors for this field when user starts typing
-    const recipeIndex = formData.recipes.findIndex(
-      (recipe) => recipe.id === recipeId
-    );
-    if (recipeIndex !== -1 && errors.recipeValidation?.[recipeIndex]) {
+    if (errors.recipeValidation?.[index]) {
       setErrors((prev) => ({
         ...prev,
         recipeValidation: {
           ...prev.recipeValidation,
-          [recipeIndex]: {
-            ...prev.recipeValidation?.[recipeIndex],
+          [index]: {
+            ...prev.recipeValidation?.[index],
             [field]: undefined,
           },
         },
@@ -259,11 +331,27 @@ export default function AddClassForm({
     }
   };
 
+  // Remove recipe from editing state
+  const removeEditingRecipe = (index: number) => {
+    setEditingRecipes((prev) => {
+      // Filter out the recipe at the specified index
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
   const getTotalCost = () => {
-    return formData.recipes.reduce((total, recipe) => {
+    // Calculate total Cost from both saved and editing recipes
+    const savedCost = formData.recipes.reduce((total, recipe) => {
       const Cost = parseFloat(recipe.totalCost);
       return total + (isNaN(Cost) ? 0 : Cost);
     }, 0);
+
+    const editingCost = editingRecipes.reduce((total, recipe) => {
+      const Cost = parseFloat(recipe.totalCost);
+      return total + (isNaN(Cost) ? 0 : Cost);
+    }, 0);
+
+    return savedCost + editingCost;
   };
 
   const validateForm = (): boolean => {
@@ -274,6 +362,15 @@ export default function AddClassForm({
       newErrors.name = "Name is required";
     }
 
+    if (!formData.sQuantity || formData.sQuantity.trim() === "") {
+      newErrors.sQuantity = "No of Students is required";
+    } else {
+      const sQty = parseFloat(formData.sQuantity);
+      if (isNaN(sQty) || sQty < 0) {
+        newErrors.sQuantity = "No of Students must be a non-negative number";
+      }
+    }
+
     if (!formData.location) {
       newErrors.location = "Location is required";
     }
@@ -282,9 +379,9 @@ export default function AddClassForm({
       newErrors.dateTime = "Date Time is required";
     }
 
-    // Validate all recipe rows
+    // Validate all recipe rows (both saved and editing)
     let hasRecipeErrors = false;
-    newErrors.recipeValidation = {};
+    // Don't initialize recipeValidation here - only add it if there are actual errors
 
     formData.recipes.forEach((recipe, index) => {
       if (!validateRecipeRow(recipe, index)) {
@@ -292,51 +389,139 @@ export default function AddClassForm({
       }
     });
 
+    editingRecipes.forEach((recipe, index) => {
+      const actualIndex = formData.recipes.length + index;
+      if (!validateRecipeRow(recipe, actualIndex)) {
+        hasRecipeErrors = true;
+      }
+    });
+
+    // Only add recipeValidation to errors if there are actual validation errors
+    // Since validateRecipeRow sets errors in state, check the current errors state
+    if (hasRecipeErrors && errors.recipeValidation) {
+      const hasActualErrors = Object.keys(errors.recipeValidation).some(
+        (key) => {
+          const errorObj = errors.recipeValidation?.[Number(key)];
+          return errorObj && Object.keys(errorObj).length > 0;
+        }
+      );
+      if (hasActualErrors) {
+        newErrors.recipeValidation = errors.recipeValidation;
+      } else {
+        // No actual errors, don't include recipeValidation in newErrors
+      }
+    }
+    // If hasRecipeErrors is false, don't add recipeValidation at all
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0 && !hasRecipeErrors;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) {
-      return;
+    // Filter out empty/invalid recipes from saved recipes
+    const savedValidRecipes = formData.recipes.filter((recipe) => {
+      return recipe.recipeId && recipe.recipeId.trim() !== "";
+    });
+
+    // Filter out empty/invalid recipes from editing recipes
+    const editingValidRecipes = editingRecipes.filter((recipe) => {
+      return recipe.recipeId && recipe.recipeId.trim() !== "";
+    });
+
+    // Combine only valid recipes
+    const allRecipes = [...savedValidRecipes, ...editingValidRecipes];
+
+    console.log("Form submission debug:");
+    console.log("formData.recipes:", formData.recipes);
+    console.log("editingRecipes:", editingRecipes);
+    console.log("allRecipes:", allRecipes);
+
+    // Filter out empty/invalid recipes (this should be redundant now but keeping for safety)
+    const validRecipes = allRecipes.filter((recipe) => {
+      console.log("Checking recipe:", recipe);
+
+      // Validate that recipe has an ID
+      const isValid = recipe.recipeId && recipe.recipeId.trim() !== "";
+
+      console.log("Is valid:", isValid);
+      return isValid;
+    });
+
+    if (validateForm()) {
+      console.log("validRecipes", validRecipes);
+
+      const transformedRecipes = validRecipes.map((recipe) => {
+        // RecipeId is now a string
+        const recipeId = recipe.recipeId?.trim() || undefined;
+        // Convert UnitCost from string to number
+        const unitCostValue = recipe.unitCost
+          ? parseFloat(recipe.unitCost)
+          : NaN;
+        return {
+          RecipeId: recipeId,
+          RReference: recipe.reference || "",
+          UnitCost:
+            Number.isFinite(unitCostValue) && unitCostValue >= 0
+              ? unitCostValue
+              : undefined,
+        };
+      });
+
+      // Get SQuantity from form input
+      const sQuantity = formData.sQuantity ? parseFloat(formData.sQuantity) : 0;
+
+      if (isEditing) {
+        const updatePayload: Partial<Omit<Class, "ClassDateTime">> & {
+          id: string;
+          ClassDateTime?: string;
+        } = {
+          id: initialClassData?.ClassId || "",
+          Name: formData.name.trim(),
+          Instructor: formData.instructor.trim() || undefined,
+          Description: formData.description.trim() || undefined,
+          Notes: formData.Notes.trim() || undefined,
+          Location: formData.location,
+          ClassDateTime: formData.dateTime
+            ? formatClassDateTime(formData.dateTime)
+            : undefined,
+          SQuantity: sQuantity,
+          RecipeList: transformedRecipes,
+        };
+
+        console.log("updatePayload", updatePayload);
+        await UpdateClass(updatePayload as any).unwrap();
+      } else {
+        const createPayload = {
+          Name: formData.name.trim(),
+          Instructor: formData.instructor.trim() || undefined,
+          Description: formData.description.trim() || undefined,
+          Notes: formData.Notes.trim() || undefined,
+          Location: formData.location,
+          ClassDateTime: formData.dateTime
+            ? formatClassDateTime(formData.dateTime)
+            : undefined,
+          SQuantity: sQuantity,
+          RecipeList: transformedRecipes,
+        } as Omit<Class, "ClassId"> & { ClassDateTime?: string };
+
+        console.log("createPayload:", createPayload);
+        await CreateClass(createPayload).unwrap();
+      }
     }
-
-    const classData: Omit<Class, "id"> = {
-      name: formData.name.trim(),
-      description: formData.description.trim() || undefined,
-      noOfStudents: formData.recipes.reduce((total, recipe) => {
-        const students = parseFloat(recipe.noOfStudents);
-        return total + (isNaN(students) ? 0 : students);
-      }, 0),
-      location: formData.location,
-      reference: formData.Notes.trim() || "",
-      totalCost: getTotalCost(),
-      startDate: formData.dateTime,
-    };
-
-    onSubmit(classData);
   };
 
   const handleReset = () => {
     setFormData({
       name: "",
+      instructor: "",
       description: "",
       Notes: "",
+      sQuantity: "",
       location: "",
       dateTime: "",
-      recipes: [
-        {
-          id: Date.now().toString(),
-          recipeId: "",
-          recipeName: "",
-          noOfStudents: "",
-          reference: "",
-          unitCost: "",
-          totalCost: "",
-        },
-      ],
+      recipes: [],
     });
     setErrors({});
   };
@@ -346,11 +531,19 @@ export default function AddClassForm({
     onCancel();
   };
 
+  useEffect(() => {
+    if (updateSuccess || createSuccess) {
+      onCancel();
+    }
+  }, [updateSuccess, createSuccess, onCancel]);
+
   return (
     <div className="flex flex-col bg-white">
       {/* Header with Close Button */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        <h1 className="text-2xl font-semibold text-gray-900">Class</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">
+          {isEditing ? "Edit Class" : "Add New Class"}
+        </h1>
         <button
           type="button"
           onClick={handleCancel}
@@ -376,141 +569,177 @@ export default function AddClassForm({
       <div className="flex-1 overflow-y-auto hide-scrollbar p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* General Details Section */}
-          <div className="border border-gray-300 rounded-lg p-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-4">
-              General Details
-            </h3>
+          <div className="space-y-4">
+            {/* Name */}
+            <div>
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                value={formData.name}
+                onChange={(e) => handleInputChange("name", e.target.value)}
+                placeholder="Enter class name"
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                  errors.name
+                    ? "border-red-500 bg-red-50"
+                    : "border-gray-300 hover:border-gray-400"
+                }`}
+              />
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+              )}
+            </div>
 
-            <div className="space-y-4">
-              {/* Name */}
+            {/* Instructor */}
+            <div>
+              <label
+                htmlFor="instructor"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Instructor
+              </label>
+              <input
+                id="instructor"
+                type="text"
+                value={formData.instructor}
+                onChange={(e) =>
+                  handleInputChange("instructor", e.target.value)
+                }
+                placeholder="Enter instructor name"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors hover:border-gray-400"
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Description
+              </label>
+              <textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
+                placeholder="Enter class description"
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors hover:border-gray-400 resize-none"
+              />
+            </div>
+
+            {/* Notes */}
+            <div>
+              <label
+                htmlFor="Notes"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Notes
+              </label>
+              <input
+                id="Notes"
+                type="text"
+                value={formData.Notes}
+                onChange={(e) => handleInputChange("Notes", e.target.value)}
+                placeholder="Enter Notes"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors hover:border-gray-400"
+              />
+            </div>
+
+            {/* SQuantity */}
+            <div>
+              <label
+                htmlFor="sQuantity"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                No of Students
+              </label>
+              <input
+                id="sQuantity"
+                type="number"
+                min="0"
+                value={formData.sQuantity}
+                onChange={(e) => handleInputChange("sQuantity", e.target.value)}
+                placeholder="Enter no. of Students"
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                  errors.sQuantity
+                    ? "border-red-500 bg-red-50"
+                    : "border-gray-300 hover:border-gray-400"
+                }`}
+              />
+              {errors.sQuantity && (
+                <p className="mt-1 text-sm text-red-600">{errors.sQuantity}</p>
+              )}
+            </div>
+
+            {/* Location and Date Time Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label
-                  htmlFor="name"
+                  htmlFor="location"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Name
+                  Location
+                </label>
+                <select
+                  id="location"
+                  value={formData.location}
+                  onChange={(e) =>
+                    handleInputChange("location", e.target.value)
+                  }
+                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                    errors.location
+                      ? "border-red-500 bg-red-50"
+                      : "border-gray-300 hover:border-gray-400"
+                  }`}
+                >
+                  <option value="">Select Location</option>
+                  {LOCATION_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                {errors.location && (
+                  <p className="mt-1 text-sm text-red-600">{errors.location}</p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="dateTime"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Date Time
                 </label>
                 <input
-                  id="name"
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
-                  placeholder="Enter class name"
+                  id="dateTime"
+                  type="datetime-local"
+                  value={formData.dateTime}
+                  onChange={(e) =>
+                    handleInputChange("dateTime", e.target.value)
+                  }
                   className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                    errors.name
+                    errors.dateTime
                       ? "border-red-500 bg-red-50"
                       : "border-gray-300 hover:border-gray-400"
                   }`}
                 />
-                {errors.name && (
-                  <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                {errors.dateTime && (
+                  <p className="mt-1 text-sm text-red-600">{errors.dateTime}</p>
                 )}
-              </div>
-
-              {/* Description */}
-              <div>
-                <label
-                  htmlFor="description"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Description
-                </label>
-                <textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) =>
-                    handleInputChange("description", e.target.value)
-                  }
-                  placeholder="Enter class description"
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors hover:border-gray-400 resize-none"
-                />
-              </div>
-
-              {/* Notes */}
-              <div>
-                <label
-                  htmlFor="Notes"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Notes
-                </label>
-                <input
-                  id="Notes"
-                  type="text"
-                  value={formData.Notes}
-                  onChange={(e) => handleInputChange("Notes", e.target.value)}
-                  placeholder="Enter Notes"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors hover:border-gray-400"
-                />
-              </div>
-
-              {/* Location and Date Time Row */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label
-                    htmlFor="location"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Location
-                  </label>
-                  <select
-                    id="location"
-                    value={formData.location}
-                    onChange={(e) =>
-                      handleInputChange("location", e.target.value)
-                    }
-                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                      errors.location
-                        ? "border-red-500 bg-red-50"
-                        : "border-gray-300 hover:border-gray-400"
-                    }`}
-                  >
-                    <option value="">Select Location</option>
-                    {LOCATION_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.location && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.location}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="dateTime"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Date Time
-                  </label>
-                  <input
-                    id="dateTime"
-                    type="datetime-local"
-                    value={formData.dateTime}
-                    onChange={(e) =>
-                      handleInputChange("dateTime", e.target.value)
-                    }
-                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                      errors.dateTime
-                        ? "border-red-500 bg-red-50"
-                        : "border-gray-300 hover:border-gray-400"
-                    }`}
-                  />
-                  {errors.dateTime && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.dateTime}
-                    </p>
-                  )}
-                </div>
               </div>
             </div>
           </div>
 
-          {/* Recipe & Cost Details Section */}
+          {/* Recipe & Cost Details */}
           <div className="bg-gray-50 rounded-md p-4">
             <h3 className="text-lg font-medium text-gray-700 mb-4">
               Recipe & Cost Details
@@ -524,9 +753,6 @@ export default function AddClassForm({
                     <tr>
                       <th className="px-4 py-2 text-left text-sm font-medium">
                         Recipe
-                      </th>
-                      <th className="px-4 py-2 text-left text-sm font-medium">
-                        No of Students
                       </th>
                       <th className="px-4 py-2 text-left text-sm font-medium">
                         Reference
@@ -543,138 +769,214 @@ export default function AddClassForm({
                     </tr>
                   </thead>
                   <tbody>
-                    {formData.recipes.map((recipe, index) => (
-                      <tr
-                        key={recipe.id}
-                        className="border-b border-gray-200 hover:bg-gray-50"
-                      >
-                        <td className="px-4 py-2">
-                          <select
-                            value={recipe.recipeId}
-                            onChange={(e) => {
-                              const selectedRecipe = RECIPE_OPTIONS.find(
-                                (r) => r.value === e.target.value
-                              );
-                              updateRecipe(
-                                recipe.id,
-                                "recipeId",
-                                e.target.value
-                              );
-                              updateRecipe(
-                                recipe.id,
-                                "recipeName",
-                                selectedRecipe?.label || ""
-                              );
-                            }}
-                            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                              errors.recipeValidation?.[index]?.recipeId
-                                ? "border-red-500 bg-red-50"
-                                : "border-gray-300"
+                    {/* All recipes (both saved and editing) */}
+                    {[...formData.recipes, ...editingRecipes].map(
+                      (data, index) => {
+                        const isEditing = index >= formData.recipes.length;
+                        const actualIndex = isEditing
+                          ? index - formData.recipes.length
+                          : index;
+
+                        return (
+                          <tr
+                            key={
+                              isEditing
+                                ? `editing-${actualIndex}`
+                                : `saved-${index}`
+                            }
+                            className={`border-b border-gray-200 ${
+                              isEditing ? "bg-gray-100" : "hover:bg-gray-50"
                             }`}
                           >
-                            <option value="">Select Recipe</option>
-                            {RECIPE_OPTIONS.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
-                          {errors.recipeValidation?.[index]?.recipeId && (
-                            <p className="mt-1 text-xs text-red-600">
-                              {errors.recipeValidation[index].recipeId}
-                            </p>
-                          )}
-                        </td>
-                        <td className="px-4 py-2">
-                          <input
-                            type="number"
-                            placeholder="No of Students"
-                            min="1"
-                            value={recipe.noOfStudents}
-                            onChange={(e) =>
-                              updateRecipe(
-                                recipe.id,
-                                "noOfStudents",
-                                e.target.value
-                              )
-                            }
-                            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                              errors.recipeValidation?.[index]?.noOfStudents
-                                ? "border-red-500 bg-red-50"
-                                : "border-gray-300"
-                            }`}
-                          />
-                          {errors.recipeValidation?.[index]?.noOfStudents && (
-                            <p className="mt-1 text-xs text-red-600">
-                              {errors.recipeValidation[index].noOfStudents}
-                            </p>
-                          )}
-                        </td>
-                        <td className="px-4 py-2">
-                          <input
-                            type="text"
-                            placeholder="Reference"
-                            value={recipe.reference}
-                            onChange={(e) =>
-                              updateRecipe(
-                                recipe.id,
-                                "reference",
-                                e.target.value
-                              )
-                            }
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          />
-                        </td>
-                        <td className="px-4 py-2">
-                          <input
-                            type="number"
-                            placeholder="Unit Cost"
-                            min="0"
-                            step="0.01"
-                            value={recipe.unitCost}
-                            onChange={(e) =>
-                              updateRecipe(
-                                recipe.id,
-                                "unitCost",
-                                e.target.value
-                              )
-                            }
-                            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                              errors.recipeValidation?.[index]?.unitCost
-                                ? "border-red-500 bg-red-50"
-                                : "border-gray-300"
-                            }`}
-                          />
-                          {errors.recipeValidation?.[index]?.unitCost && (
-                            <p className="mt-1 text-xs text-red-600">
-                              {errors.recipeValidation[index].unitCost}
-                            </p>
-                          )}
-                        </td>
-                        <td className="px-4 py-2">
-                          <input
-                            type="text"
-                            value={`$${recipe.totalCost || "0.00"}`}
-                            readOnly
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-700"
-                          />
-                        </td>
-                        <td className="px-4 py-2 text-center">
-                          <button
-                            type="button"
-                            onClick={() => removeRecipe(recipe.id)}
-                            disabled={formData.recipes.length <= 1}
-                            className={`text-lg font-bold ${
-                              formData.recipes.length <= 1
-                                ? "text-gray-300 cursor-not-allowed"
-                                : "text-red-600 hover:text-red-800"
-                            }`}
+                            <td className="px-4 py-2">
+                              <select
+                                value={data.recipeId}
+                                disabled={recipesLoading}
+                                onChange={(e) => {
+                                  const RecipeId = e.target.value;
+
+                                  // Update recipe name for display purposes
+                                  const selectedRecipe = (
+                                    recipeData || []
+                                  ).find((r) => r.RecipeId === RecipeId);
+                                  const RecipeName = selectedRecipe?.Name || "";
+
+                                  if (isEditing) {
+                                    updateEditingRecipe(
+                                      actualIndex,
+                                      "recipeId",
+                                      RecipeId
+                                    );
+                                    // Only update recipe name for display, don't auto-fill other fields
+                                    updateEditingRecipe(
+                                      actualIndex,
+                                      "recipeName",
+                                      RecipeName
+                                    );
+                                  } else {
+                                    updateSavedRecipe(
+                                      index,
+                                      "recipeId",
+                                      RecipeId
+                                    );
+                                    // Only update recipe name for display, don't auto-fill other fields
+                                    updateSavedRecipe(
+                                      index,
+                                      "recipeName",
+                                      RecipeName
+                                    );
+                                  }
+                                }}
+                                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                                  errors.recipeValidation?.[actualIndex]
+                                    ?.recipeId
+                                    ? "border-red-500 bg-red-50"
+                                    : "border-gray-300"
+                                }`}
+                              >
+                                <option value="">
+                                  {recipesLoading
+                                    ? "Loading recipes..."
+                                    : "Select Recipe"}
+                                </option>
+                                {!recipesLoading &&
+                                  (recipeData || []).map((option) => (
+                                    <option
+                                      key={option.RecipeId}
+                                      value={option.RecipeId || ""}
+                                    >
+                                      {option.Name ||
+                                        `Recipe #${option.RecipeId}`}
+                                    </option>
+                                  ))}
+                              </select>
+                              {isEditing &&
+                                errors.recipeValidation?.[actualIndex]
+                                  ?.recipeId && (
+                                  <p className="mt-1 text-xs text-red-600">
+                                    {
+                                      errors.recipeValidation[actualIndex]
+                                        .recipeId
+                                    }
+                                  </p>
+                                )}
+                            </td>
+                            <td className="px-4 py-2">
+                              <input
+                                type="text"
+                                placeholder="Reference"
+                                value={data.reference}
+                                onChange={(e) =>
+                                  isEditing
+                                    ? updateEditingRecipe(
+                                        actualIndex,
+                                        "reference",
+                                        e.target.value
+                                      )
+                                    : updateSavedRecipe(
+                                        index,
+                                        "reference",
+                                        e.target.value
+                                      )
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              />
+                            </td>
+                            <td className="px-4 py-2">
+                              <div className="relative">
+                                <input
+                                  type="number"
+                                  placeholder="Unit Cost"
+                                  min="0"
+                                  step="0.01"
+                                  value={data.unitCost}
+                                  onChange={(e) =>
+                                    isEditing
+                                      ? updateEditingRecipe(
+                                          actualIndex,
+                                          "unitCost",
+                                          e.target.value
+                                        )
+                                      : updateSavedRecipe(
+                                          index,
+                                          "unitCost",
+                                          e.target.value
+                                        )
+                                  }
+                                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                                    errors.recipeValidation?.[actualIndex]
+                                      ?.unitCost
+                                      ? "border-red-500 bg-red-50"
+                                      : "border-gray-300"
+                                  }`}
+                                />
+                              </div>
+                              {isEditing &&
+                                errors.recipeValidation?.[actualIndex]
+                                  ?.unitCost && (
+                                  <p className="mt-1 text-xs text-red-600">
+                                    {
+                                      errors.recipeValidation[actualIndex]
+                                        .unitCost
+                                    }
+                                  </p>
+                                )}
+                            </td>
+                            <td className="px-4 py-2">
+                              <input
+                                type="text"
+                                value={`$${data.totalCost || "0.00"}`}
+                                readOnly
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-700"
+                              />
+                            </td>
+                            <td className="px-4 py-2 text-center">
+                              {isEditing ? (
+                                <div className="flex justify-center space-x-2">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      removeEditingRecipe(actualIndex)
+                                    }
+                                    className="text-gray-600 hover:text-red-600 text-lg font-bold"
+                                  >
+                                    ×
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setFormData((prev) => ({
+                                      ...prev,
+                                      recipes: prev.recipes.filter(
+                                        (_, i) => i !== index
+                                      ),
+                                    }));
+                                  }}
+                                  className="text-red-600 hover:text-red-800 text-lg font-bold"
+                                >
+                                  ×
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      }
+                    )}
+
+                    {/* Empty state */}
+                    {formData.recipes.length === 0 &&
+                      editingRecipes.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={5}
+                            className="px-4 py-8 text-center text-gray-500"
                           >
-                            ×
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                            No recipes yet. Click "Add Recipe" to add recipes.
+                          </td>
+                        </tr>
+                      )}
                   </tbody>
                 </table>
               </div>
@@ -718,7 +1020,7 @@ export default function AddClassForm({
               type="submit"
               className="px-4 py-2 text-sm font-medium text-white bg-blue-950 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-sm"
             >
-              Save
+              {submitButtonText}
             </button>
           </div>
         </form>

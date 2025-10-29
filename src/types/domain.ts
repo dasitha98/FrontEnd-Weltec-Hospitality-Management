@@ -6,21 +6,6 @@ export interface Student {
   Email: string;
 }
 
-// export interface Class {
-//   id: ID;
-//   name: string;
-//   noOfStudents: number;
-//   location: string;
-//   reference: string;
-//   totalCost: number;
-//   description?: string;
-//   instructor?: string;
-//   startDate?: string;
-//   endDate?: string;
-//   createdAt?: string;
-//   updatedAt?: string;
-// }
-
 export interface Food {
   Id: ID;
   Name: string;
@@ -97,16 +82,24 @@ export interface Recipe {
 }
 
 export interface Class {
-  ClassID?: ID;
+  ClassId?: ID;
   Name?: string;
+  Instructor?: string;
   Description?: string;
   Notes?: string;
   ClassDateTime?: Date;
   Location?: string;
-  RecipeID?: string;
   SQuantity?: number;
-  RReference?: string;
-  UnitCost?: number;
+  RecipeList?: ClassRecipe[];
   CreatedAt?: string;
   UpdatedAt?: string;
+}
+
+export interface ClassRecipe {
+  ClassRecipeId?: string;
+  ClassId?: string;
+  RecipeId?: string;
+  RReference: string;
+  UnitCost?: number;
+  TotalCost?: number;
 }
