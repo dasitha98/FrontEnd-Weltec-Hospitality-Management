@@ -176,7 +176,7 @@ function IngredientList() {
                   Ingredient Name
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
-                  Sales Rep
+                  Description
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Store
@@ -189,9 +189,6 @@ function IngredientList() {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Usage Unit
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
-                  Purchase Unit
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Purchase Cost
@@ -222,7 +219,7 @@ function IngredientList() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="text-sm text-gray-900">
-                      {ingredient?.supplier?.Name}
+                      {ingredient?.Description}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
@@ -267,11 +264,7 @@ function IngredientList() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 align-middle border-r border-gray-200">
-                    <div className="text-sm text-gray-900 max-w-xs truncate">
-                      {ingredient.Description || "No Description"}
-                    </div>
-                  </td>
+                  
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium align-middle">
                     <div className="flex space-x-2">
                       <button

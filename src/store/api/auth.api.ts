@@ -34,8 +34,11 @@ export const authApi = apiBase.injectEndpoints({
     }),
     login: b.mutation<
       {
-          accessToken: any; token: string; user: Auth; message: string 
-},
+        accessToken: any;
+        token: string;
+        user: Auth;
+        message: string;
+      },
       { email: string; password: string }
     >({
       query: ({ email, password }) => ({

@@ -50,13 +50,20 @@ function LoginForm() {
         password: formData.password,
       }).unwrap();
 
-      // Store token in cookie (you might want to use httpOnly cookies for production)
-      if (typeof document !== "undefined") {
-        document.cookie = `accessToken=${result?.accessToken}`; // 24 hours
+      // Store token in cookie with proper settings
+      if (typeof document !== "undefined" && result?.accessToken) {
+        const expires = new Date();
+        expires.setTime(expires.getTime() + 24 * 60 * 60 * 1000); // 24 hours
+        document.cookie = `accessToken=${
+          result.accessToken
+        }; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
       }
 
-      // Redirect to dashboard or home
-      router.push("/");
+      // Redirect to intended destination or home
+      const redirect = new URLSearchParams(window.location.search).get(
+        "redirect"
+      );
+      router.push(redirect || "/");
     } catch (err: any) {
       console.error("Login failed:", err);
       const apiMessage =
