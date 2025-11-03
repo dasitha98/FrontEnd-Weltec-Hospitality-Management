@@ -43,12 +43,9 @@ interface FormErrors {
 }
 
 const STORE_OPTIONS = [
-  { value: "Main Store", label: "Main Store" },
-  { value: "Cold Storage", label: "Cold Storage" },
-  { value: "Dry Storage", label: "Dry Storage" },
-  { value: "Freezer", label: "Freezer" },
-  { value: "Pantry", label: "Pantry" },
-  { value: "Other", label: "Other" },
+  { value: "Dry Store", label: "Dry Store" },
+  { value: "Chill Storage", label: "Chill Storage" },
+  { value: "Oven Storage", label: "Oven Storage" },
 ];
 
 const UNIT_OPTIONS = [
@@ -125,15 +122,43 @@ export default function AddIngredientForm({
   }, [updateSuccess, createSuccess]);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
+    // Handle numeric fields - store as number but validate
+    const numericFields: (keyof FormData)[] = [
+      "PurchaseQuantity",
+      "PurchaseCost",
+      "UsageCost",
+    ];
+
+    let processedValue: string | number = value;
+
+    // Clear error for cost fields when user starts typing (validation happens on submit)
+    if (field === "PurchaseCost" || field === "UsageCost") {
+      // Don't validate in real-time, only clear existing errors
+      setErrors((prev) => ({
+        ...prev,
+        [field]: undefined,
+      }));
+    } else {
+      // Clear error for other fields when user starts typing
+      setErrors((prev) => ({
+        ...prev,
+        [field]: undefined,
+      }));
+    }
+
+    if (numericFields.includes(field)) {
+      // Allow empty string for better UX while typing
+      if (value === "" || value === undefined || value === null) {
+        processedValue = 0;
+      } else {
+        const numValue = parseFloat(value);
+        processedValue = isNaN(numValue) ? 0 : numValue;
+      }
+    }
+
     setFormData((prev) => ({
       ...prev,
-      [field]: value,
-    }));
-
-    // Clear error when user starts typing
-    setErrors((prev) => ({
-      ...prev,
-      [field]: undefined,
+      [field]: processedValue,
     }));
   };
 
@@ -170,17 +195,29 @@ export default function AddIngredientForm({
       newErrors.UsageUnit = "Usage Unit is required";
     }
 
-    // Optional field validations
-    if (formData.PurchaseCost) {
-      const Cost = formData.PurchaseCost;
-      if (isNaN(Cost) || Cost < 0) {
+    // Cost field validations
+    if (
+      formData.PurchaseCost === undefined ||
+      formData.PurchaseCost === null ||
+      formData.PurchaseCost === 0
+    ) {
+      newErrors.PurchaseCost = "Purchase Cost is required";
+    } else {
+      const purchaseCost = Number(formData.PurchaseCost);
+      if (isNaN(purchaseCost) || purchaseCost < 0) {
         newErrors.PurchaseCost = "Purchase Cost must be a non-negative number";
       }
     }
 
-    if (formData.UsageCost) {
-      const Cost = formData.UsageCost;
-      if (isNaN(Cost) || Cost < 0) {
+    if (
+      formData.UsageCost === undefined ||
+      formData.UsageCost === null ||
+      formData.UsageCost === 0
+    ) {
+      newErrors.UsageCost = "Usage Cost is required";
+    } else {
+      const usageCost = Number(formData.UsageCost);
+      if (isNaN(usageCost) || usageCost < 0) {
         newErrors.UsageCost = "Usage Cost must be a non-negative number";
       }
     }
@@ -452,7 +489,7 @@ export default function AddIngredientForm({
                 htmlFor="purchaseCost"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                Purchase Cost
+                Purchase Cost <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -487,7 +524,7 @@ export default function AddIngredientForm({
                 htmlFor="usageCost"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                Usage Cost
+                Usage Cost <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

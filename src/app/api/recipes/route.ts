@@ -8,12 +8,7 @@ const mockRecipes: Recipe[] = [
     RecipeId: "1",
     Name: "Spaghetti Carbonara",
     Description: "Classic Italian pasta dish with eggs, cheese, and pancetta",
-    category: "Main Course",
-    prepTime: 15,
-    cookTime: 20,
-    servings: 4,
-    difficulty: "Medium",
-    ingredients: [
+    RecipeIngredients: [
       {
         IngredientId: "1",
         IngredientName: "Spaghetti",
@@ -43,36 +38,14 @@ const mockRecipes: Recipe[] = [
         Notes: "Freshly grated",
       },
     ],
-    instructions: [
-      "Bring a large pot of salted water to boil and cook spaghetti according to package directions",
-      "Meanwhile, cook pancetta in a large skillet over medium heat until crispy",
-      "In a bowl, whisk together eggs and grated Parmesan cheese",
-      "Drain pasta, reserving 1 cup of pasta water",
-      "Add hot pasta to the skillet with pancetta and toss",
-      "Remove from heat and quickly stir in egg mixture, adding pasta water as needed",
-      "Serve immediately with extra Parmesan cheese",
-    ],
-    nutritionInfo: {
-      calories: 520,
-      protein: 28,
-      carbs: 45,
-      fat: 24,
-    },
-    tags: ["Italian", "Pasta", "Comfort Food"],
-    createdBy: "Chef Mario",
-    createdAt: "2024-01-15T10:30:00Z",
-    updatedAt: "2024-01-15T10:30:00Z",
+    CreatedAt: "2024-01-15T10:30:00Z",
+    UpdatedAt: "2024-01-15T10:30:00Z",
   },
   {
-    id: "2",
-    name: "Chocolate Chip Cookies",
-    description: "Soft and chewy homemade chocolate chip cookies",
-    category: "Dessert",
-    prepTime: 15,
-    cookTime: 12,
-    servings: 24,
-    difficulty: "Easy",
-    ingredients: [
+    RecipeId: "2",
+    Name: "Chocolate Chip Cookies",
+    Description: "Soft and chewy homemade chocolate chip cookies",
+    RecipeIngredients: [
       {
         IngredientId: "5",
         IngredientName: "All-purpose flour",
@@ -102,38 +75,14 @@ const mockRecipes: Recipe[] = [
         Notes: "Semi-sweet",
       },
     ],
-    instructions: [
-      "Preheat oven to 375°F (190°C)",
-      "Cream together butter and both sugars until light and fluffy",
-      "Beat in eggs one at a time, then vanilla",
-      "In a separate bowl, whisk together flour, baking soda, and salt",
-      "Gradually mix dry ingredients into wet ingredients",
-      "Fold in chocolate chips",
-      "Drop rounded tablespoons of dough onto ungreased baking sheets",
-      "Bake for 9-11 minutes until golden brown",
-      "Cool on baking sheet for 2 minutes before removing",
-    ],
-    nutritionInfo: {
-      calories: 180,
-      protein: 2,
-      carbs: 22,
-      fat: 9,
-    },
-    tags: ["Dessert", "Cookies", "Baking"],
-    createdBy: "Chef Sarah",
-    createdAt: "2024-01-10T14:20:00Z",
-    updatedAt: "2024-01-10T14:20:00Z",
+    CreatedAt: "2024-01-10T14:20:00Z",
+    UpdatedAt: "2024-01-10T14:20:00Z",
   },
   {
-    id: "3",
-    name: "Caesar Salad",
-    description: "Fresh romaine lettuce with homemade Caesar dressing",
-    category: "Salad",
-    prepTime: 20,
-    cookTime: 0,
-    servings: 6,
-    difficulty: "Easy",
-    ingredients: [
+    RecipeId: "3",
+    Name: "Caesar Salad",
+    Description: "Fresh romaine lettuce with homemade Caesar dressing",
+    RecipeIngredients: [
       {
         IngredientId: "9",
         IngredientName: "Romaine lettuce",
@@ -163,24 +112,8 @@ const mockRecipes: Recipe[] = [
         Notes: "Optional",
       },
     ],
-    instructions: [
-      "Wash and dry romaine lettuce thoroughly",
-      "Tear lettuce into bite-sized pieces",
-      "Make Caesar dressing by whisking together mayonnaise, lemon juice, garlic, and anchovies",
-      "Toss lettuce with dressing until well coated",
-      "Add croutons and shaved Parmesan cheese",
-      "Serve immediately",
-    ],
-    nutritionInfo: {
-      calories: 150,
-      protein: 8,
-      carbs: 12,
-      fat: 9,
-    },
-    tags: ["Salad", "Healthy", "Quick"],
-    createdBy: "Chef Alex",
-    createdAt: "2024-01-05T09:15:00Z",
-    updatedAt: "2024-01-05T09:15:00Z",
+    CreatedAt: "2024-01-05T09:15:00Z",
+    UpdatedAt: "2024-01-05T09:15:00Z",
   },
 ];
 
@@ -199,13 +132,13 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const newRecipe: Omit<Recipe, "id"> = await request.json();
+    const newRecipe: Omit<Recipe, "RecipeId"> = await request.json();
 
     const recipe: Recipe = {
       ...newRecipe,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      RecipeId: Date.now().toString(),
+      CreatedAt: new Date().toISOString(),
+      UpdatedAt: new Date().toISOString(),
     };
 
     console.log("➡️ API hit: POST /api/recipes", recipe);

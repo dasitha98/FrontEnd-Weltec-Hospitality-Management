@@ -27,7 +27,7 @@ export default function Sidebar() {
     },
     {
       title: "Recipes",
-      path: "/recipe",
+      path: "/recipes",
       icon: <AiIcons.AiFillFire />,
       name: "nav-text",
     },
@@ -40,6 +40,12 @@ export default function Sidebar() {
     {
       title: "Supplier",
       path: "/suppliers",
+      icon: <AiIcons.AiFillFire />,
+      name: "nav-text",
+    },
+    {
+      title: "Reports",
+      path: "/reports",
       icon: <AiIcons.AiFillFire />,
       name: "nav-text",
     },

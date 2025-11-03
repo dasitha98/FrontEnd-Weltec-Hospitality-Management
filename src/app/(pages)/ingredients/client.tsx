@@ -188,10 +188,10 @@ function IngredientList() {
                   Purchase Unit
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
-                  Usage Unit
+                  Purchase Cost
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
-                  Purchase Cost
+                  Usage Unit
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
                   Usage Cost
@@ -246,6 +246,13 @@ function IngredientList() {
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="flex items-center">
                       <div className="text-sm text-gray-900">
+                        ${ingredient.PurchaseCost}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
+                    <div className="flex items-center">
+                      <div className="text-sm text-gray-900">
                         {ingredient.UsageUnit}
                       </div>
                     </div>
@@ -253,14 +260,7 @@ function IngredientList() {
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="flex items-center">
                       <div className="text-sm text-gray-900">
-                        {ingredient.PurchaseCost}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
-                    <div className="flex items-center">
-                      <div className="text-sm text-gray-900">
-                        {ingredient.UsageCost}
+                        ${ingredient.UsageCost}
                       </div>
                     </div>
                   </td>

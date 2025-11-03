@@ -8,6 +8,10 @@ import {
 } from "@/store/api/recipes.api";
 import { useListIngredientQuery } from "@/store/api/ingredient.api";
 import { FaTimes } from "react-icons/fa";
+import {
+  useListLevelQuery,
+  useCreateLevelMutation,
+} from "@/store/api/level.api";
 
 interface AddRecipeFormProps {
   onSubmit: (data: Omit<Recipe, "RecipeId">) => void;
@@ -24,7 +28,7 @@ interface FormData {
   RLevel: string;
   Year: string;
   RReference: string;
-  Yield: number;
+  Yield: string;
   RecipeIngredients: RecipeIngredient[];
   TotalCost: string;
 }
@@ -48,14 +52,6 @@ interface FormErrors {
       | undefined;
   };
 }
-
-const LEVEL_OPTIONS = [
-  { value: "Level 1", label: "Level 1" },
-  { value: "Level 2", label: "Level 2" },
-  { value: "Level 3", label: "Level 3" },
-  { value: "Level 4", label: "Level 4" },
-  { value: "Level 5", label: "Level 5" },
-];
 
 const YEAR_OPTIONS = [
   { value: "2025", label: "2025" },
@@ -101,6 +97,13 @@ export default function AddRecipeForm({
   const { data: IngredientListData, isLoading: isLoadingIngredients } =
     useListIngredientQuery();
 
+  const { data: LevelListData, isLoading: isLoadingLevels } =
+    useListLevelQuery();
+  const [
+    CreateLevel,
+    { isLoading: isCreatingLevel, isSuccess: createLevelSuccess },
+  ] = useCreateLevelMutation();
+
   const [
     CreateRecipe,
     {
@@ -116,7 +119,7 @@ export default function AddRecipeForm({
     RLevel: "",
     Year: "",
     RReference: "",
-    Yield: 0,
+    Yield: "",
     RecipeIngredients: [],
     TotalCost: "",
   });
@@ -125,6 +128,9 @@ export default function AddRecipeForm({
   const [editingIngredients, setEditingIngredients] = useState<
     RecipeIngredient[]
   >([]);
+  const [isAddLevelDialogOpen, setIsAddLevelDialogOpen] = useState(false);
+  const [newLevelName, setNewLevelName] = useState("");
+  const [levelError, setLevelError] = useState<string>("");
 
   // Initialize form data when initialRecipeData changes
   useEffect(() => {
@@ -135,7 +141,7 @@ export default function AddRecipeForm({
         RLevel: initialRecipeData.RLevel || "",
         Year: initialRecipeData.Year || "",
         RReference: initialRecipeData.RReference || "",
-        Yield: initialRecipeData.Yield || 0,
+        Yield: initialRecipeData.Yield || "",
         RecipeIngredients: initialRecipeData?.RecipeIngredients || [],
         TotalCost: initialRecipeData.TotalCost?.toString() || "",
       });
@@ -143,6 +149,17 @@ export default function AddRecipeForm({
   }, [initialRecipeData]);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
+    // Handle special case for "Add Level" option
+    if (field === "RLevel" && value === "__add_level__") {
+      setIsAddLevelDialogOpen(true);
+      // Reset the select to empty
+      setFormData((prev) => ({
+        ...prev,
+        [field]: "",
+      }));
+      return;
+    }
+
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -153,6 +170,33 @@ export default function AddRecipeForm({
       ...prev,
       [field]: undefined,
     }));
+  };
+
+  const handleAddLevel = async () => {
+    if (!newLevelName.trim()) {
+      setLevelError("Level name is required");
+      return;
+    }
+
+    try {
+      const result = await CreateLevel({
+        Name: newLevelName.trim(),
+      }).unwrap();
+
+      // Set the newly created level as selected
+      setFormData((prev) => ({
+        ...prev,
+        RLevel: result.Name,
+      }));
+
+      // Close dialog and reset
+      setIsAddLevelDialogOpen(false);
+      setNewLevelName("");
+      setLevelError("");
+    } catch (error) {
+      setLevelError("Failed to create level. Please try again.");
+      console.error("Error creating level:", error);
+    }
   };
 
   const saveCurrentIngredient = (index: number) => {
@@ -322,7 +366,7 @@ export default function AddRecipeForm({
           id: initialRecipeData?.RecipeId || "",
           Name: formData.Name.trim(),
           Description: formData.Description.trim() || undefined,
-          Yield: Number(formData.Yield) || 0,
+          Yield: formData.Yield || "",
           RLevel: formData.RLevel,
           RReference: formData.RReference,
           TotalCost: totalCost,
@@ -336,7 +380,7 @@ export default function AddRecipeForm({
         const createPayload = {
           Name: formData.Name.trim(),
           Description: formData.Description.trim() || undefined,
-          Yield: Number(formData.Yield) || 0,
+          Yield: formData.Yield || "",
           RLevel: formData.RLevel,
           RReference: formData.RReference,
           TotalCost: totalCost,
@@ -353,8 +397,84 @@ export default function AddRecipeForm({
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
+    // Validate Name
     if (!formData.Name.trim()) {
       newErrors.Name = "Recipe name is required";
+    }
+
+    // Validate RLevel (Level)
+    if (!formData.RLevel.trim()) {
+      newErrors.RLevel = "Level is required";
+    }
+
+    // Validate Year
+    if (!formData.Year.trim()) {
+      newErrors.Year = "Year is required";
+    }
+
+    // Validate RReference (Reference)
+    if (!formData.RReference.trim()) {
+      newErrors.RReference = "Reference is required";
+    }
+
+    // Validate Yield
+    if (!formData.Yield.trim()) {
+      newErrors.Yield = "Yield is required";
+    }
+
+    // Validate that there is at least one ingredient
+    const allIngredients = [
+      ...formData.RecipeIngredients,
+      ...editingIngredients,
+    ];
+    const validIngredients = allIngredients.filter(
+      (ingredient) =>
+        ingredient.IngredientId &&
+        ingredient.IngredientId.trim() !== "" &&
+        ingredient.IngredientName &&
+        ingredient.Quantity > 0 &&
+        ingredient.Unit &&
+        typeof ingredient.Cost === "number" &&
+        ingredient.Cost >= 0
+    );
+
+    if (validIngredients.length === 0) {
+      // We can add a general error message, but for ingredients we have specific validation
+      // The ingredient validation will be handled separately in the table
+    }
+
+    // Also validate editing ingredients that haven't been saved
+    const ingredientValidation: FormErrors["ingredientValidation"] = {};
+    editingIngredients.forEach((ingredient, index) => {
+      const validationErrors: {
+        IngredientName?: string;
+        Quantity?: string;
+        Unit?: string;
+        Cost?: string;
+      } = {};
+
+      if (!ingredient.IngredientName || !ingredient.IngredientId) {
+        validationErrors.IngredientName = "Ingredient name is required";
+      }
+      if (!ingredient.Quantity || ingredient.Quantity <= 0) {
+        validationErrors.Quantity = "Quantity must be greater than 0";
+      }
+      if (!ingredient.Unit) {
+        validationErrors.Unit = "Unit is required";
+      }
+      if (ingredient.Cost === undefined || ingredient.Cost < 0) {
+        validationErrors.Cost = "Cost must be a non-negative number";
+      }
+
+      // Only add to errors if there are actual errors
+      if (Object.keys(validationErrors).length > 0) {
+        ingredientValidation[index] = validationErrors;
+      }
+    });
+
+    // Combine errors
+    if (Object.keys(ingredientValidation).length > 0) {
+      newErrors.ingredientValidation = ingredientValidation;
     }
 
     setErrors(newErrors);
@@ -368,7 +488,7 @@ export default function AddRecipeForm({
       RLevel: "",
       Year: "",
       RReference: "",
-      Yield: 0,
+      Yield: "",
       RecipeIngredients: [],
       TotalCost: "",
     });
@@ -437,9 +557,9 @@ export default function AddRecipeForm({
       onCancel();
     }
   }, [updateSuccess, createSuccess]);
-  
+
   return (
-    <div className="flex flex-col bg-white">
+    <div className="p-6 flex flex-col bg-white">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">
           {isEditing ? "Edit Recipe" : "Add New Recipe"}
@@ -517,11 +637,23 @@ export default function AddRecipeForm({
                   }`}
                 >
                   <option value="">Select Level</option>
-                  {LEVEL_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
+                  <option
+                    className="px-4 py-2 text-sm font-medium text-white bg-blue-950 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    value="__add_level__"
+                  >
+                    Add Level
+                  </option>
+                  {LevelListData && LevelListData.length > 0 ? (
+                    LevelListData.map((level) => (
+                      <option key={level.LevelId} value={level.Name}>
+                        {level.Name}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="" disabled>
+                      {isLoadingLevels ? "Loading..." : "No levels available"}
                     </option>
-                  ))}
+                  )}
                 </select>
                 {errors.RLevel && (
                   <p className="mt-1 text-sm text-red-600">{errors.RLevel}</p>
@@ -601,11 +733,10 @@ export default function AddRecipeForm({
                 </label>
                 <input
                   id="yield"
-                  type="number"
-                  min="1"
+                  type="text"
                   value={formData.Yield}
                   onChange={(e) => handleInputChange("Yield", e.target.value)}
-                  placeholder="1"
+                  placeholder="Enter yield"
                   className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
                     errors.Yield
                       ? "border-red-500 bg-red-50"
@@ -699,12 +830,20 @@ export default function AddRecipeForm({
                                     selectedIngredient?.Name || "";
                                   const IngredientId =
                                     selectedIngredient?.IngredientId || "";
+                                  const Unit =
+                                    selectedIngredient?.UsageUnit || "";
+                                  const Cost =
+                                    selectedIngredient?.UsageCost || 0;
 
                                   console.log(
                                     "Setting IngredientId:",
                                     IngredientId,
                                     "IngredientName:",
-                                    IngredientName
+                                    IngredientName,
+                                    "Unit:",
+                                    Unit,
+                                    "Cost:",
+                                    Cost
                                   );
 
                                   if (isEditing) {
@@ -722,6 +861,16 @@ export default function AddRecipeForm({
                                       "IngredientName",
                                       IngredientName
                                     );
+                                    updateEditingIngredient(
+                                      actualIndex,
+                                      "Unit",
+                                      Unit
+                                    );
+                                    updateEditingIngredient(
+                                      actualIndex,
+                                      "Cost",
+                                      Cost
+                                    );
                                   } else {
                                     console.log(
                                       "Updating saved ingredient at index:",
@@ -737,6 +886,8 @@ export default function AddRecipeForm({
                                       "IngredientName",
                                       IngredientName
                                     );
+                                    updateSavedIngredient(index, "Unit", Unit);
+                                    updateSavedIngredient(index, "Cost", Cost);
                                   }
                                 }}
                                 className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
@@ -1020,6 +1171,102 @@ export default function AddRecipeForm({
           </div>
         </form>
       </div>
+
+      {/* Add Level Dialog */}
+      {isAddLevelDialogOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 backdrop-blur-lg transition-opacity"
+            onClick={() => {
+              setIsAddLevelDialogOpen(false);
+              setNewLevelName("");
+              setLevelError("");
+            }}
+          />
+
+          {/* Dialog */}
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div
+              className="relative bg-white rounded-lg shadow-xl w-full max-w-md transform transition-all"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Add New Level
+                </h3>
+                <button
+                  onClick={() => {
+                    setIsAddLevelDialogOpen(false);
+                    setNewLevelName("");
+                    setLevelError("");
+                  }}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  aria-label="Close dialog"
+                >
+                  <FaTimes size={20} />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                <div className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="levelName"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Level Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="levelName"
+                      type="text"
+                      value={newLevelName}
+                      onChange={(e) => {
+                        setNewLevelName(e.target.value);
+                        setLevelError("");
+                      }}
+                      placeholder="Enter level name (e.g., Level 6)"
+                      className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                        levelError
+                          ? "border-red-500 bg-red-50"
+                          : "border-gray-300 hover:border-gray-400"
+                      }`}
+                    />
+                    {levelError && (
+                      <p className="mt-1 text-sm text-red-600">{levelError}</p>
+                    )}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex justify-end space-x-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsAddLevelDialogOpen(false);
+                        setNewLevelName("");
+                        setLevelError("");
+                      }}
+                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleAddLevel}
+                      disabled={isCreatingLevel}
+                      className="px-4 py-2 text-sm font-medium text-white bg-blue-950 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isCreatingLevel ? "Adding..." : "Add Level"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

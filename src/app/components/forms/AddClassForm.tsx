@@ -170,16 +170,72 @@ export default function AddClassForm({
   }, [initialClassData, recipeData]);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-
     // Clear error when user starts typing
     setErrors((prev) => ({
       ...prev,
       [field]: undefined,
     }));
+
+    // If sQuantity (No of Students) changes, recalculate all recipe total costs
+    if (field === "sQuantity") {
+      const noOfStudents = parseFloat(value);
+
+      // Update form data and recalculate total costs for saved recipes
+      setFormData((prev) => ({
+        ...prev,
+        [field]: value,
+        recipes: prev.recipes.map((recipe) => {
+          const unitCost = parseFloat(recipe.unitCost);
+          if (
+            !isNaN(unitCost) &&
+            unitCost >= 0 &&
+            !isNaN(noOfStudents) &&
+            noOfStudents > 0
+          ) {
+            return {
+              ...recipe,
+              totalCost: (unitCost * noOfStudents).toFixed(2),
+            };
+          } else if (!isNaN(unitCost) && unitCost >= 0) {
+            return {
+              ...recipe,
+              totalCost: unitCost.toFixed(2),
+            };
+          }
+          return recipe;
+        }),
+      }));
+
+      // Recalculate total costs for editing recipes
+      setEditingRecipes((prev) => {
+        return prev.map((recipe) => {
+          const unitCost = parseFloat(recipe.unitCost);
+          if (
+            !isNaN(unitCost) &&
+            unitCost >= 0 &&
+            !isNaN(noOfStudents) &&
+            noOfStudents > 0
+          ) {
+            return {
+              ...recipe,
+              totalCost: (unitCost * noOfStudents).toFixed(2),
+            };
+          } else if (!isNaN(unitCost) && unitCost >= 0) {
+            return {
+              ...recipe,
+              totalCost: unitCost.toFixed(2),
+            };
+          }
+          return recipe;
+        });
+      });
+    } else {
+      // For other fields, just update the field value
+      setFormData((prev) => ({
+        ...prev,
+        [field]: value,
+      }));
+    }
   };
 
   const validateRecipeRow = (recipe: RecipeEntry, index: number): boolean => {
@@ -250,11 +306,23 @@ export default function AddClassForm({
         if (i === index) {
           const updatedRecipe = { ...recipe, [field]: value };
 
-          // Calculate total Cost when unitCost changes
-          if (field === "unitCost") {
-            const unitCost = parseFloat(value);
-            if (!isNaN(unitCost) && unitCost >= 0) {
-              // Total Cost is the same as Unit Cost when no students field
+          // Calculate total Cost when unitCost changes or when noOfStudents changes
+          if (field === "unitCost" || field === "noOfStudents") {
+            const unitCost = parseFloat(updatedRecipe.unitCost);
+            const noOfStudents = parseFloat(
+              formData.sQuantity || updatedRecipe.noOfStudents
+            );
+
+            if (
+              !isNaN(unitCost) &&
+              unitCost >= 0 &&
+              !isNaN(noOfStudents) &&
+              noOfStudents > 0
+            ) {
+              // Total Cost = Unit Cost * No of Students
+              updatedRecipe.totalCost = (unitCost * noOfStudents).toFixed(2);
+            } else if (!isNaN(unitCost) && unitCost >= 0) {
+              // If no students value, just use unit cost
               updatedRecipe.totalCost = unitCost.toFixed(2);
             } else {
               updatedRecipe.totalCost = "";
@@ -296,11 +364,23 @@ export default function AddClassForm({
           if (i === index) {
             const updatedRecipe = { ...recipe, [field]: value };
 
-            // Calculate total Cost when unitCost changes
-            if (field === "unitCost") {
-              const unitCost = parseFloat(value);
-              if (!isNaN(unitCost) && unitCost >= 0) {
-                // Total Cost is the same as Unit Cost when no students field
+            // Calculate total Cost when unitCost changes or when noOfStudents changes
+            if (field === "unitCost" || field === "noOfStudents") {
+              const unitCost = parseFloat(updatedRecipe.unitCost);
+              const noOfStudents = parseFloat(
+                prev.sQuantity || updatedRecipe.noOfStudents
+              );
+
+              if (
+                !isNaN(unitCost) &&
+                unitCost >= 0 &&
+                !isNaN(noOfStudents) &&
+                noOfStudents > 0
+              ) {
+                // Total Cost = Unit Cost * No of Students
+                updatedRecipe.totalCost = (unitCost * noOfStudents).toFixed(2);
+              } else if (!isNaN(unitCost) && unitCost >= 0) {
+                // If no students value, just use unit cost
                 updatedRecipe.totalCost = unitCost.toFixed(2);
               } else {
                 updatedRecipe.totalCost = "";
@@ -800,6 +880,10 @@ export default function AddClassForm({
                                     recipeData || []
                                   ).find((r) => r.RecipeId === RecipeId);
                                   const RecipeName = selectedRecipe?.Name || "";
+                                  const RecipeReference =
+                                    selectedRecipe?.RReference || "";
+                                  const RecipeUnitCost =
+                                    selectedRecipe?.TotalCost || 0;
 
                                   if (isEditing) {
                                     updateEditingRecipe(
@@ -807,11 +891,22 @@ export default function AddClassForm({
                                       "recipeId",
                                       RecipeId
                                     );
-                                    // Only update recipe name for display, don't auto-fill other fields
                                     updateEditingRecipe(
                                       actualIndex,
                                       "recipeName",
                                       RecipeName
+                                    );
+                                    // Auto-fill reference from selected recipe
+                                    updateEditingRecipe(
+                                      actualIndex,
+                                      "reference",
+                                      RecipeReference
+                                    );
+                                    // Auto-fill unit cost from selected recipe
+                                    updateEditingRecipe(
+                                      actualIndex,
+                                      "unitCost",
+                                      RecipeUnitCost.toString()
                                     );
                                   } else {
                                     updateSavedRecipe(
@@ -819,11 +914,22 @@ export default function AddClassForm({
                                       "recipeId",
                                       RecipeId
                                     );
-                                    // Only update recipe name for display, don't auto-fill other fields
                                     updateSavedRecipe(
                                       index,
                                       "recipeName",
                                       RecipeName
+                                    );
+                                    // Auto-fill reference from selected recipe
+                                    updateSavedRecipe(
+                                      index,
+                                      "reference",
+                                      RecipeReference
+                                    );
+                                    // Auto-fill unit cost from selected recipe
+                                    updateSavedRecipe(
+                                      index,
+                                      "unitCost",
+                                      RecipeUnitCost.toString()
                                     );
                                   }
                                 }}

@@ -19,6 +19,8 @@ export const apiBase = createApi({
     "Ingredient",
     "Recipe",
     "Auth",
+    "Level",
+    "Report",
   ],
   endpoints: () => ({}),
 });

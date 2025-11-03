@@ -52,6 +52,20 @@ function LoginForm() {
 
       // Store token in cookie with proper settings
       if (typeof document !== "undefined" && result?.accessToken) {
+        // Check if accessToken cookie exists and remove it
+        const cookies = document.cookie.split(";");
+        const hasAccessToken = cookies.some((cookie) =>
+          cookie.trim().startsWith("accessToken=")
+        );
+
+        if (hasAccessToken) {
+          // Remove existing accessToken cookie by setting it to expire in the past
+          const pastDate = new Date();
+          pastDate.setTime(pastDate.getTime() - 1);
+          document.cookie = `accessToken=; expires=${pastDate.toUTCString()}; path=/; SameSite=Lax`;
+        }
+
+        // Set new accessToken cookie
         const expires = new Date();
         expires.setTime(expires.getTime() + 24 * 60 * 60 * 1000); // 24 hours
         document.cookie = `accessToken=${

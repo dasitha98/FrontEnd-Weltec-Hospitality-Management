@@ -66,7 +66,7 @@ export interface Recipe {
   RecipeId?: ID;
   Name?: string;
   Description?: string;
-  Yield?: number;
+  Yield?: string;
   RLevel?: string;
   RReference?: string;
   TotalCost?: number;
@@ -113,4 +113,21 @@ export interface Auth {
   Role?: string;
   Status?: string;
   CreatedAt?: string;
+}
+
+export interface Level {
+  LevelId: ID;
+  Name: string;
+}
+
+export interface Report {
+  ReportId?: ID;
+  Title?: string;
+  Description?: string;
+  Type?: string;
+  GeneratedBy?: string;
+  GeneratedAt?: string;
+  Data?: any;
+  CreatedAt?: string;
+  UpdatedAt?: string;
 }
