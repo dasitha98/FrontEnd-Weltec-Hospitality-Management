@@ -9,33 +9,38 @@ const PUBLIC_API_PATHS = ["/api/auth/login"];
 const TOKEN_EXPIRATION_TIME = 24 * 60 * 60 * 1000;
 
 /**
- * Validates if a token is expired or invalid
- * @param token - The access token to validate
+ * Validates if a JWT token is expired or invalid
+ * @param token - The JWT access token to validate
  * @returns true if token is valid, false if expired or invalid
  */
 function isTokenValid(token: string): boolean {
   try {
-    // Decode the base64 token
-    const decoded = Buffer.from(token, "base64").toString("utf-8");
+    // JWT tokens have 3 parts: header.payload.signature
+    const parts = token.split(".");
+    if (parts.length !== 3) {
+      return false;
+    }
+
+    // Decode the payload (second part)
+    const payload = parts[1];
+    // Add padding if needed for base64 decoding
+    const paddedPayload = payload + "=".repeat((4 - (payload.length % 4)) % 4);
+    // JWT uses base64url, convert to base64
+    const base64Payload = paddedPayload.replace(/-/g, "+").replace(/_/g, "/");
+    const decoded = Buffer.from(base64Payload, "base64").toString("utf-8");
     const tokenData = JSON.parse(decoded);
 
-    // Check if token has timestamp
-    if (!tokenData.ts || typeof tokenData.ts !== "number") {
+    // Check if token has expiration (exp field)
+    // exp is Unix timestamp in seconds, not milliseconds
+    if (!tokenData.exp || typeof tokenData.exp !== "number") {
       return false;
     }
 
-    // Check if token is expired (24 hours from creation)
-    const now = Date.now();
-    const tokenAge = now - tokenData.ts;
-
-    // Allow some small negative age (clock skew tolerance)
-    if (tokenAge < -60000) {
-      // Token is more than 1 minute in the future, likely invalid
-      return false;
-    }
-
-    if (tokenAge > TOKEN_EXPIRATION_TIME) {
-      return false;
+    // Check if token is expired
+    // exp is Unix timestamp in seconds, Date.now() is in milliseconds
+    const now = Math.floor(Date.now() / 1000);
+    if (tokenData.exp < now) {
+      return false; // Token is expired
     }
 
     return true;

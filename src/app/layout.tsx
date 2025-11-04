@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import StoreProvider from "@/store/providers";
 import AuthGuard from "./components/AuthGuard";
+import UserHeader from "./components/UserHeader";
 import "./globals.css";
 import "./index.css";
 import Sidebar from "./components/layout/menu/Sidebar";
@@ -37,7 +38,8 @@ export default function RootLayout({
           </div>
           <div className="main-content">
             <div className="header bg-blue-950 text-white">
-              School Of Hospitality
+              <UserHeader />
+              <span className="header-title">School Of Hospitality</span>
             </div>
             <div className="content">
               <StoreProvider>

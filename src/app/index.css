@@ -24,7 +24,18 @@
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
+  position: relative;
   font-size: 40px;
   font-family:Georgia, 'Times New Roman', Times, serif;
+  padding: 0 24px;
+}
+
+.header-title {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  pointer-events: none;
 }

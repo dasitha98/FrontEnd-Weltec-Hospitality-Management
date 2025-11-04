@@ -70,6 +70,11 @@ function LoginForm() {
         document.cookie = `accessToken=${result.accessToken}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
       }
 
+      // Store user info in localStorage for display in header
+      if (result?.user) {
+        localStorage.setItem("userInfo", JSON.stringify(result.user));
+      }
+
       // Verify cookie was set before navigation
       let cookieSet = false;
       for (let i = 0; i < 10; i++) {

@@ -278,7 +278,9 @@ export default function PDFClient({
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `Inventory-Report-${new Date().toISOString().split("T")[0]}.pdf`;
+      link.download = `Inventory-Report-${
+        new Date().toISOString().split("T")[0]
+      }.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -606,7 +608,8 @@ export default function PDFClient({
 
         {isError && (
           <div style={{ padding: "20px", color: "red" }}>
-            Error loading report: {error ? JSON.stringify(error) : "Unknown error"}
+            Error loading report:{" "}
+            {error ? JSON.stringify(error) : "Unknown error"}
           </div>
         )}
 
@@ -624,11 +627,13 @@ export default function PDFClient({
                   padding: "12px 24px",
                   fontSize: "16px",
                   fontWeight: "600",
-                  backgroundColor: isGenerating || !pdfComponents ? "#9CA3AF" : "#1E3A8A",
+                  backgroundColor:
+                    isGenerating || !pdfComponents ? "#9CA3AF" : "#1E3A8A",
                   color: "#ffffff",
                   border: "none",
                   borderRadius: "6px",
-                  cursor: isGenerating || !pdfComponents ? "not-allowed" : "pointer",
+                  cursor:
+                    isGenerating || !pdfComponents ? "not-allowed" : "pointer",
                   transition: "background-color 0.2s",
                 }}
                 onMouseOver={(e) => {
@@ -651,7 +656,9 @@ export default function PDFClient({
                     const url = URL.createObjectURL(pdfBlob);
                     const link = document.createElement("a");
                     link.href = url;
-                    link.download = `Inventory-Report-${new Date().toISOString().split("T")[0]}.pdf`;
+                    link.download = `Inventory-Report-${
+                      new Date().toISOString().split("T")[0]
+                    }.pdf`;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);

@@ -1,48 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useLayoutEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Cookies from "js-cookie";
-
-// Token expiration time: 24 hours in milliseconds
-const TOKEN_EXPIRATION_TIME = 24 * 60 * 60 * 1000;
-
-/**
- * Validates if a token is expired or invalid
- * @param token - The access token to validate
- * @returns true if token is valid, false if expired or invalid
- */
-function isTokenValid(token: string): boolean {
-  try {
-    // Decode the base64 token
-    const decoded = atob(token); // Use atob instead of Buffer in browser
-    const tokenData = JSON.parse(decoded);
-
-    // Check if token has timestamp
-    if (!tokenData.ts || typeof tokenData.ts !== "number") {
-      return false;
-    }
-
-    // Check if token is expired (24 hours from creation)
-    const now = Date.now();
-    const tokenAge = now - tokenData.ts;
-
-    // Allow some small negative age (clock skew tolerance)
-    if (tokenAge < -60000) {
-      // Token is more than 1 minute in the future, likely invalid
-      return false;
-    }
-
-    if (tokenAge > TOKEN_EXPIRATION_TIME) {
-      return false;
-    }
-
-    return true;
-  } catch (error) {
-    // Token is invalid if it can't be decoded or parsed
-    return false;
-  }
-}
+import { decodeJWT, isTokenExpired } from "@/utils/jwt";
 
 /**
  * AuthGuard component that protects routes by checking token validity
@@ -51,23 +12,41 @@ function isTokenValid(token: string): boolean {
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+
+  // Always start with loading state to prevent content flash
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
-  useEffect(() => {
+  // Use useLayoutEffect to check auth synchronously before browser paint
+  // This prevents content flash by checking before rendering
+  useLayoutEffect(() => {
     // Skip auth check for login page
     if (pathname === "/login") {
       setIsAuthorized(true);
       return;
     }
 
-    // Check auth status - only do a simple check
-    // Middleware handles server-side validation, this is just for client-side navigation
-    const checkAuth = () => {
-      const token = Cookies.get("accessToken");
+    // Check auth synchronously - use immediate check
+    const token = Cookies.get("accessToken");
 
-      if (!token) {
-        // No token, redirect to login
+    if (!token) {
+      // No token, redirect to login immediately
+      setIsAuthorized(false);
+      const currentPath = pathname;
+      const loginUrl =
+        currentPath !== "/"
+          ? `/login?redirect=${encodeURIComponent(currentPath)}`
+          : "/login";
+      router.replace(loginUrl);
+      return;
+    }
+
+    // Validate token expiration - same logic as middleware
+    try {
+      // Check if token is expired
+      if (isTokenExpired(token)) {
+        // Token is expired, redirect to login
         setIsAuthorized(false);
+        Cookies.remove("accessToken", { path: "/" });
         const currentPath = pathname;
         const loginUrl =
           currentPath !== "/"
@@ -77,15 +56,35 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // For client-side navigation, just check if token exists
-      // Middleware handles detailed validation on server-side requests
-      // This allows smooth client-side navigation without blocking valid users
-      setIsAuthorized(true);
-    };
+      // Validate token format (ensure it's a valid JWT)
+      const payload = decodeJWT(token);
+      if (!payload || !payload.exp) {
+        // Invalid token format, redirect to login
+        setIsAuthorized(false);
+        Cookies.remove("accessToken", { path: "/" });
+        const currentPath = pathname;
+        const loginUrl =
+          currentPath !== "/"
+            ? `/login?redirect=${encodeURIComponent(currentPath)}`
+            : "/login";
+        router.replace(loginUrl);
+        return;
+      }
 
-    // Small delay to ensure cookies are available
-    const timeoutId = setTimeout(checkAuth, 50);
-    return () => clearTimeout(timeoutId);
+      // Token is valid, allow rendering
+      setIsAuthorized(true);
+    } catch (error) {
+      // Token validation failed, redirect to login
+      console.error("Token validation error:", error);
+      setIsAuthorized(false);
+      Cookies.remove("accessToken", { path: "/" });
+      const currentPath = pathname;
+      const loginUrl =
+        currentPath !== "/"
+          ? `/login?redirect=${encodeURIComponent(currentPath)}`
+          : "/login";
+      router.replace(loginUrl);
+    }
   }, [pathname, router]);
 
   // Don't render children if we're on login page (to avoid layout conflicts)
@@ -93,9 +92,35 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  // Show nothing while checking
+  // Show loading spinner while checking authentication (only if we're still checking)
   if (isAuthorized === null) {
-    return null;
+    return (
+      <div className="w-full h-full flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-4">
+          <svg
+            className="animate-spin h-12 w-12 text-blue-950"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+          <p className="text-gray-600 text-sm">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   // Only render if authorized
@@ -103,6 +128,32 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  // Not authorized - redirecting (handled in useEffect)
-  return null;
+  // Not authorized - redirecting (show loading while redirecting)
+  return (
+    <div className="w-full h-full flex items-center justify-center min-h-[400px]">
+      <div className="flex flex-col items-center gap-4">
+        <svg
+          className="animate-spin h-12 w-12 text-blue-950"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          ></circle>
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+        <p className="text-gray-600 text-sm">Redirecting...</p>
+      </div>
+    </div>
+  );
 }
