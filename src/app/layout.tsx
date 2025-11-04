@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import StoreProvider from "@/store/providers";
+import AuthGuard from "./components/AuthGuard";
 import "./globals.css";
 import "./index.css";
 import Sidebar from "./components/layout/menu/Sidebar";
@@ -39,7 +40,9 @@ export default function RootLayout({
               School Of Hospitality
             </div>
             <div className="content">
-              <StoreProvider>{children}</StoreProvider>
+              <StoreProvider>
+                <AuthGuard>{children}</AuthGuard>
+              </StoreProvider>
             </div>
           </div>
         </div>

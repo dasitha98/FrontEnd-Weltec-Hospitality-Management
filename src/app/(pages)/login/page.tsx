@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useLoginMutation } from "@/store/api/auth.api";
 import StoreProvider from "@/store/providers";
 import { makeStore } from "@/store";
+import Cookies from "js-cookie";
 import { FaEnvelope, FaLock, FaSignInAlt } from "react-icons/fa";
 
 function LoginForm() {
@@ -50,34 +51,47 @@ function LoginForm() {
         password: formData.password,
       }).unwrap();
 
-      // Store token in cookie with proper settings
-      if (typeof document !== "undefined" && result?.accessToken) {
-        // Check if accessToken cookie exists and remove it
-        const cookies = document.cookie.split(";");
-        const hasAccessToken = cookies.some((cookie) =>
-          cookie.trim().startsWith("accessToken=")
-        );
+      // Store token in cookie with proper settings using js-cookie for consistency
+      if (result?.accessToken) {
+        // Remove existing accessToken cookie if it exists
+        Cookies.remove("accessToken", { path: "/" });
 
-        if (hasAccessToken) {
-          // Remove existing accessToken cookie by setting it to expire in the past
-          const pastDate = new Date();
-          pastDate.setTime(pastDate.getTime() - 1);
-          document.cookie = `accessToken=; expires=${pastDate.toUTCString()}; path=/; SameSite=Lax`;
-        }
+        // Set new accessToken cookie with 24 hour expiration
+        // Use both document.cookie and js-cookie to ensure it's set
+        Cookies.set("accessToken", result.accessToken, {
+          expires: 1, // 1 day
+          path: "/",
+          sameSite: "lax",
+        });
 
-        // Set new accessToken cookie
+        // Also set via document.cookie as a backup
         const expires = new Date();
         expires.setTime(expires.getTime() + 24 * 60 * 60 * 1000); // 24 hours
-        document.cookie = `accessToken=${
-          result.accessToken
-        }; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
+        document.cookie = `accessToken=${result.accessToken}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
+      }
+
+      // Verify cookie was set before navigation
+      let cookieSet = false;
+      for (let i = 0; i < 10; i++) {
+        const cookie = Cookies.get("accessToken");
+        if (cookie === result?.accessToken) {
+          cookieSet = true;
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+
+      if (!cookieSet) {
+        console.error("Cookie was not set properly");
       }
 
       // Redirect to intended destination or home
+      // Use window.location.href instead of router.push to force a full page reload
+      // This ensures the cookie is properly set and middleware can validate it
       const redirect = new URLSearchParams(window.location.search).get(
         "redirect"
       );
-      router.push(redirect || "/");
+      window.location.href = redirect || "/";
     } catch (err: any) {
       console.error("Login failed:", err);
       const apiMessage =
