@@ -146,8 +146,12 @@ function UsersList() {
   return (
     <div className="p-14">
       <style jsx>{`
-        .hide-scrollbar::-webkit-scrollbar {
+        .table-scrollbar::-webkit-scrollbar {
           display: none;
+        }
+        .table-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
       {/* Header */}
@@ -184,7 +188,9 @@ function UsersList() {
       {/* Users Table */}
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
         <div
-          className="overflow-x-auto hide-scrollbar"
+          className={`overflow-x-auto max-h-[600px] table-scrollbar ${
+            isDialogOpen ? "overflow-y-hidden" : "overflow-y-auto"
+          }`}
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           <table className="min-w-full divide-y divide-gray-200 border border-gray-300">
@@ -245,15 +251,19 @@ function UsersList() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(
+                        className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(
                           auth.Role
                         )}`}
                       >
-                        <FaUserTag className="mr-1" size={10} />
-                        {auth.Role
-                          ? auth.Role.charAt(0).toUpperCase() +
-                            auth.Role.slice(1)
-                          : "N/A"}
+                        {auth.Role ? (
+                          <>
+                            <FaUserTag className="mr-1" size={10} />
+                            {auth.Role.charAt(0).toUpperCase() +
+                              auth.Role.slice(1)}
+                          </>
+                        ) : (
+                          "-"
+                        )}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">

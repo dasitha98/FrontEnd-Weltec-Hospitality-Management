@@ -6,9 +6,7 @@ import { apiBase } from "./api/baseApi";
 // Import slices
 import app from "./slices/app.slice";
 import supplierUI from "./slices/supplier.slice";
-import studentsUI from "./slices/students.slice";
 import classesUI from "./slices/classes.slice";
-import foodsUI from "./slices/foods.slice";
 import recipesUI from "./slices/recipes.slice";
 import authUI from "./slices/auth.slice";
 import levelUI from "./slices/level.slice";
@@ -18,9 +16,7 @@ import reportUI from "./slices/report.slice";
 const rootReducer = combineReducers({
   app,
   supplierUI,
-  studentsUI,
   classesUI,
-  foodsUI,
   recipesUI,
   authUI,
   levelUI,

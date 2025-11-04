@@ -136,8 +136,12 @@ function SupplierList() {
   return (
     <div className="p-14">
       <style jsx>{`
-        .hide-scrollbar::-webkit-scrollbar {
+        .table-scrollbar::-webkit-scrollbar {
           display: none;
+        }
+        .table-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
       {/* Header */}
@@ -175,7 +179,9 @@ function SupplierList() {
       {/* Suppliers Table */}
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
         <div
-          className="overflow-x-auto hide-scrollbar"
+          className={`overflow-x-auto max-h-[600px] table-scrollbar ${
+            isDialogOpen ? "overflow-y-hidden" : "overflow-y-auto"
+          }`}
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           <table className="min-w-full divide-y divide-gray-200 border border-gray-300">
@@ -253,8 +259,8 @@ function SupplierList() {
                     </div>
                   </td>
                   <td className="px-6 py-4 align-middle border-r border-gray-200">
-                    <div className="text-sm text-gray-900 max-w-xs truncate">
-                      {supplier.Notes || "No Notes"}
+                    <div className="text-sm text-gray-900 text-center">
+                      {supplier.Notes || "-"}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium align-middle">

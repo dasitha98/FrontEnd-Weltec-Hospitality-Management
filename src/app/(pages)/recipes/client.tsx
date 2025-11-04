@@ -137,8 +137,12 @@ export function RecipeList() {
   return (
     <div className="p-14">
       <style jsx>{`
-        .hide-scrollbar::-webkit-scrollbar {
+        .table-scrollbar::-webkit-scrollbar {
           display: none;
+        }
+        .table-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
       {/* Header */}
@@ -176,7 +180,9 @@ export function RecipeList() {
       {/* Recipes Table */}
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
         <div
-          className="overflow-x-auto hide-scrollbar"
+          className={`overflow-x-auto max-h-[600px] table-scrollbar ${
+            isDialogOpen ? "overflow-y-hidden" : "overflow-y-auto"
+          }`}
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           <table className="min-w-full divide-y divide-gray-200 border border-gray-300">
@@ -213,13 +219,13 @@ export function RecipeList() {
                     </div>
                   </td>
                   <td className="px-6 py-4 align-middle border-r border-gray-200">
-                    <div className="text-sm text-gray-900">
-                      {recipe.Description || "No description"}
+                    <div className="text-sm text-gray-900 text-center">
+                      {recipe.Description || "-"}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
-                    <div className="text-sm text-gray-900">
-                      {recipe.RReference || "N/A"}
+                    <div className="text-sm text-gray-900 text-center">
+                      {recipe.RReference || "-"}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">

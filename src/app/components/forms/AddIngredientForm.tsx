@@ -25,11 +25,11 @@ interface FormData {
   Description: string;
   SupplierId: string;
   Store: string;
-  PurchaseQuantity: number;
+  PurchaseQuantity: number | string;
   PurchaseUnit: string;
   UsageUnit: string;
-  PurchaseCost: number;
-  UsageCost: number;
+  PurchaseCost: number | string;
+  UsageCost: number | string;
 }
 
 interface FormErrors {
@@ -91,11 +91,11 @@ export default function AddIngredientForm({
     Description: "",
     SupplierId: "",
     Store: "",
-    PurchaseQuantity: 0,
+    PurchaseQuantity: "",
     PurchaseUnit: "",
     UsageUnit: "",
-    PurchaseCost: 0,
-    UsageCost: 0,
+    PurchaseCost: "",
+    UsageCost: "",
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -118,11 +118,11 @@ export default function AddIngredientForm({
         Description: initialData.Description || "",
         SupplierId: initialData.SupplierId || "",
         Store: initialData.Store || "",
-        PurchaseQuantity: initialData.PurchaseQuantity || 0,
+        PurchaseQuantity: initialData.PurchaseQuantity ?? "",
         PurchaseUnit: initialData.PurchaseUnit || "",
         UsageUnit: initialData.UsageUnit || "",
-        PurchaseCost: initialData.PurchaseCost || 0,
-        UsageCost: initialData.UsageCost || 0,
+        PurchaseCost: initialData.PurchaseCost ?? "",
+        UsageCost: initialData.UsageCost ?? "",
       });
     }
   }, [initialData]);
@@ -161,10 +161,10 @@ export default function AddIngredientForm({
     if (numericFields.includes(field)) {
       // Allow empty string for better UX while typing
       if (value === "" || value === undefined || value === null) {
-        processedValue = 0;
+        processedValue = "";
       } else {
         const numValue = parseFloat(value);
-        processedValue = isNaN(numValue) ? 0 : numValue;
+        processedValue = isNaN(numValue) ? "" : numValue;
       }
     }
 
@@ -190,10 +190,10 @@ export default function AddIngredientForm({
       newErrors.Store = "Store is required";
     }
 
-    if (!formData.PurchaseQuantity) {
+    if (!formData.PurchaseQuantity || formData.PurchaseQuantity === "") {
       newErrors.PurchaseQuantity = "Purchase Qty is required";
     } else {
-      const Quantity = formData.PurchaseQuantity;
+      const Quantity = Number(formData.PurchaseQuantity);
       if (isNaN(Quantity) || Quantity <= 0) {
         newErrors.PurchaseQuantity = "Purchase Qty must be a positive number";
       }
@@ -211,6 +211,7 @@ export default function AddIngredientForm({
     if (
       formData.PurchaseCost === undefined ||
       formData.PurchaseCost === null ||
+      formData.PurchaseCost === "" ||
       formData.PurchaseCost === 0
     ) {
       newErrors.PurchaseCost = "Purchase Cost is required";
@@ -224,6 +225,7 @@ export default function AddIngredientForm({
     if (
       formData.UsageCost === undefined ||
       formData.UsageCost === null ||
+      formData.UsageCost === "" ||
       formData.UsageCost === 0
     ) {
       newErrors.UsageCost = "Usage Cost is required";
@@ -241,13 +243,20 @@ export default function AddIngredientForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
+      // Convert string values to numbers for submission
+      const submitData = {
+        ...formData,
+        PurchaseQuantity: Number(formData.PurchaseQuantity) || 0,
+        PurchaseCost: Number(formData.PurchaseCost) || 0,
+        UsageCost: Number(formData.UsageCost) || 0,
+      };
       if (isEditing && initialData?.IngredientId) {
         await UpdateIngredient({
           id: initialData.IngredientId,
-          ...formData,
+          ...submitData,
         }).unwrap();
       } else {
-        await CreateIngredient(formData).unwrap();
+        await CreateIngredient(submitData).unwrap();
       }
     }
   };
@@ -258,11 +267,11 @@ export default function AddIngredientForm({
       Description: "",
       SupplierId: "",
       Store: "",
-      PurchaseQuantity: 0,
+      PurchaseQuantity: "",
       PurchaseUnit: "",
       UsageUnit: "",
-      PurchaseCost: 0,
-      UsageCost: 0,
+      PurchaseCost: "",
+      UsageCost: "",
     });
     setErrors({});
   };
@@ -408,7 +417,11 @@ export default function AddIngredientForm({
                 type="number"
                 step="0.01"
                 min="0"
-                value={formData.PurchaseQuantity}
+                value={
+                  formData.PurchaseQuantity === ""
+                    ? ""
+                    : formData.PurchaseQuantity
+                }
                 onChange={(e) =>
                   handleInputChange("PurchaseQuantity", e.target.value)
                 }
@@ -512,7 +525,9 @@ export default function AddIngredientForm({
                   type="number"
                   step="0.01"
                   min="0"
-                  value={formData.PurchaseCost}
+                  value={
+                    formData.PurchaseCost === "" ? "" : formData.PurchaseCost
+                  }
                   onChange={(e) =>
                     handleInputChange("PurchaseCost", e.target.value)
                   }
@@ -547,7 +562,7 @@ export default function AddIngredientForm({
                   type="number"
                   step="0.01"
                   min="0"
-                  value={formData.UsageCost}
+                  value={formData.UsageCost === "" ? "" : formData.UsageCost}
                   onChange={(e) =>
                     handleInputChange("UsageCost", e.target.value)
                   }

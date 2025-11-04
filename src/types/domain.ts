@@ -1,16 +1,5 @@
 export type ID = string;
 
-export interface Student {
-  Id: ID;
-  Name: string;
-  Email: string;
-}
-
-export interface Food {
-  Id: ID;
-  Name: string;
-}
-
 export interface RecipeIngredient {
   IngredientId: string;
   IngredientIdAlternate?: string; // Backward compatibility

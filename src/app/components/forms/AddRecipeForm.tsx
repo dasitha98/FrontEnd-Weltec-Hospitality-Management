@@ -294,19 +294,38 @@ export default function AddRecipeForm({
   };
 
   // Calculate total Cost from both saved and editing ingredients
+  // Total Cost = Sum of (Quantity * Cost) for each ingredient
   const calculateTotalCost = () => {
     const savedCost = formData.RecipeIngredients?.reduce((sum, ingredient) => {
-      if (ingredient.Cost && typeof ingredient.Cost === "number") {
-        return sum + ingredient.Cost;
-      }
-      return sum;
+      const quantity =
+        typeof ingredient.Quantity === "number"
+          ? ingredient.Quantity
+          : (typeof ingredient.Quantity === "string"
+              ? parseFloat(ingredient.Quantity)
+              : 0) || 0;
+      const cost =
+        typeof ingredient.Cost === "number"
+          ? ingredient.Cost
+          : (typeof ingredient.Cost === "string"
+              ? parseFloat(ingredient.Cost)
+              : 0) || 0;
+      return sum + quantity * cost;
     }, 0);
 
     const editingCost = editingIngredients.reduce((sum, ingredient) => {
-      if (ingredient.Cost && typeof ingredient.Cost === "number") {
-        return sum + ingredient.Cost;
-      }
-      return sum;
+      const quantity =
+        typeof ingredient.Quantity === "number"
+          ? ingredient.Quantity
+          : (typeof ingredient.Quantity === "string"
+              ? parseFloat(ingredient.Quantity)
+              : 0) || 0;
+      const cost =
+        typeof ingredient.Cost === "number"
+          ? ingredient.Cost
+          : (typeof ingredient.Cost === "string"
+              ? parseFloat(ingredient.Cost)
+              : 0) || 0;
+      return sum + quantity * cost;
     }, 0);
 
     return savedCost + editingCost;
@@ -353,11 +372,22 @@ export default function AddRecipeForm({
     console.log("validIngredients:", validIngredients);
 
     if (validateForm()) {
-      // Calculate total Cost from all valid ingredients
-      const totalCost = validIngredients.reduce(
-        (sum, ingredient) => sum + (ingredient.Cost || 0),
-        0
-      );
+      // Calculate total Cost from all valid ingredients using Quantity * Cost
+      const totalCost = validIngredients.reduce((sum, ingredient) => {
+        const quantity =
+          typeof ingredient.Quantity === "number"
+            ? ingredient.Quantity
+            : (typeof ingredient.Quantity === "string"
+                ? parseFloat(ingredient.Quantity)
+                : 0) || 0;
+        const cost =
+          typeof ingredient.Cost === "number"
+            ? ingredient.Cost
+            : (typeof ingredient.Cost === "string"
+                ? parseFloat(ingredient.Cost)
+                : 0) || 0;
+        return sum + quantity * cost;
+      }, 0);
 
       console.log("totalCost:", totalCost);
 
@@ -519,6 +549,48 @@ export default function AddRecipeForm({
         i === index ? { ...ingredient, [field]: value } : ingredient
       );
       console.log("Updated editingIngredients:", updated);
+
+      // Update Total Cost in formData when Quantity or Cost changes
+      if (field === "Quantity" || field === "Cost") {
+        const savedCost =
+          formData.RecipeIngredients?.reduce((sum, ingredient) => {
+            const quantity =
+              typeof ingredient.Quantity === "number"
+                ? ingredient.Quantity
+                : (typeof ingredient.Quantity === "string"
+                    ? parseFloat(ingredient.Quantity)
+                    : 0) || 0;
+            const cost =
+              typeof ingredient.Cost === "number"
+                ? ingredient.Cost
+                : (typeof ingredient.Cost === "string"
+                    ? parseFloat(ingredient.Cost)
+                    : 0) || 0;
+            return sum + quantity * cost;
+          }, 0) || 0;
+
+        const editingCost = updated.reduce((sum, ingredient) => {
+          const quantity =
+            typeof ingredient.Quantity === "number"
+              ? ingredient.Quantity
+              : (typeof ingredient.Quantity === "string"
+                  ? parseFloat(ingredient.Quantity)
+                  : 0) || 0;
+          const cost =
+            typeof ingredient.Cost === "number"
+              ? ingredient.Cost
+              : (typeof ingredient.Cost === "string"
+                  ? parseFloat(ingredient.Cost)
+                  : 0) || 0;
+          return sum + quantity * cost;
+        }, 0);
+
+        setFormData((prev) => ({
+          ...prev,
+          TotalCost: (savedCost + editingCost).toFixed(2),
+        }));
+      }
+
       return updated;
     });
 
@@ -543,11 +615,53 @@ export default function AddRecipeForm({
     console.log(`Updating saved ingredient [${index}].${field} =`, value);
 
     setFormData((prev) => {
+      const updatedRecipeIngredients = prev.RecipeIngredients.map(
+        (ingredient, i) =>
+          i === index ? { ...ingredient, [field]: value } : ingredient
+      );
+
+      // Calculate Total Cost when Quantity or Cost changes
+      let totalCost = prev.TotalCost;
+      if (field === "Quantity" || field === "Cost") {
+        const savedCost = updatedRecipeIngredients.reduce((sum, ingredient) => {
+          const quantity =
+            typeof ingredient.Quantity === "number"
+              ? ingredient.Quantity
+              : (typeof ingredient.Quantity === "string"
+                  ? parseFloat(ingredient.Quantity)
+                  : 0) || 0;
+          const cost =
+            typeof ingredient.Cost === "number"
+              ? ingredient.Cost
+              : (typeof ingredient.Cost === "string"
+                  ? parseFloat(ingredient.Cost)
+                  : 0) || 0;
+          return sum + quantity * cost;
+        }, 0);
+
+        const editingCost = editingIngredients.reduce((sum, ingredient) => {
+          const quantity =
+            typeof ingredient.Quantity === "number"
+              ? ingredient.Quantity
+              : (typeof ingredient.Quantity === "string"
+                  ? parseFloat(ingredient.Quantity)
+                  : 0) || 0;
+          const cost =
+            typeof ingredient.Cost === "number"
+              ? ingredient.Cost
+              : (typeof ingredient.Cost === "string"
+                  ? parseFloat(ingredient.Cost)
+                  : 0) || 0;
+          return sum + quantity * cost;
+        }, 0);
+
+        totalCost = (savedCost + editingCost).toFixed(2);
+      }
+
       const updated = {
         ...prev,
-        RecipeIngredients: prev.RecipeIngredients.map((ingredient, i) =>
-          i === index ? { ...ingredient, [field]: value } : ingredient
-        ),
+        RecipeIngredients: updatedRecipeIngredients,
+        TotalCost: totalCost,
       };
       console.log(
         "Updated formData.RecipeIngredients:",
@@ -947,20 +1061,34 @@ export default function AddRecipeForm({
                                 placeholder="Qty"
                                 min="0"
                                 step="0.01"
-                                value={data.Quantity}
-                                onChange={(e) =>
+                                value={
+                                  (typeof data.Quantity === "string" &&
+                                    data.Quantity === "") ||
+                                  (typeof data.Quantity === "number" &&
+                                    data.Quantity === 0)
+                                    ? ""
+                                    : data.Quantity
+                                }
+                                onChange={(e) => {
+                                  const inputValue = e.target.value;
+                                  const value =
+                                    inputValue === ""
+                                      ? ""
+                                      : isNaN(parseFloat(inputValue))
+                                      ? ""
+                                      : parseFloat(inputValue);
                                   isEditing
                                     ? updateEditingIngredient(
                                         actualIndex,
                                         "Quantity",
-                                        parseFloat(e.target.value) || 0
+                                        value
                                       )
                                     : updateSavedIngredient(
                                         index,
                                         "Quantity",
-                                        parseFloat(e.target.value) || 0
-                                      )
-                                }
+                                        value
+                                      );
+                                }}
                                 className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                                   errors.ingredientValidation?.[actualIndex]
                                     ?.Quantity
@@ -1030,20 +1158,34 @@ export default function AddRecipeForm({
                                   placeholder="Cost"
                                   min="0"
                                   step="0.01"
-                                  value={data.Cost}
-                                  onChange={(e) =>
+                                  value={
+                                    (typeof data.Cost === "string" &&
+                                      data.Cost === "") ||
+                                    (typeof data.Cost === "number" &&
+                                      data.Cost === 0)
+                                      ? ""
+                                      : data.Cost
+                                  }
+                                  onChange={(e) => {
+                                    const inputValue = e.target.value;
+                                    const value =
+                                      inputValue === ""
+                                        ? ""
+                                        : isNaN(parseFloat(inputValue))
+                                        ? ""
+                                        : parseFloat(inputValue);
                                     isEditing
                                       ? updateEditingIngredient(
                                           actualIndex,
                                           "Cost",
-                                          parseFloat(e.target.value) || 0
+                                          value
                                         )
                                       : updateSavedIngredient(
                                           index,
                                           "Cost",
-                                          parseFloat(e.target.value) || 0
-                                        )
-                                  }
+                                          value
+                                        );
+                                  }}
                                   className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                                     errors.ingredientValidation?.[actualIndex]
                                       ?.Cost

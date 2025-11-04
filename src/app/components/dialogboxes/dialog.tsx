@@ -173,7 +173,7 @@ export function RecipeDialog({
       <AddRecipeForm
         onSubmit={handleSubmit}
         onCancel={handleCancel}
-        initialData={initialData}
+        initialRecipeData={initialData}
         isEditing={isEditing}
         submitButtonText={isEditing ? "Update Recipe" : "Add Recipe"}
         cancelButtonText="Cancel"

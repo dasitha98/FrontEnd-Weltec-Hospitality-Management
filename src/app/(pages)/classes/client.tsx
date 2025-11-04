@@ -131,8 +131,12 @@ function ClassList() {
   return (
     <div className="p-14">
       <style jsx>{`
-        .hide-scrollbar::-webkit-scrollbar {
+        .table-scrollbar::-webkit-scrollbar {
           display: none;
+        }
+        .table-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
       {/* Header */}
@@ -170,7 +174,9 @@ function ClassList() {
       {/* Classes Table */}
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
         <div
-          className="overflow-x-auto hide-scrollbar"
+          className={`overflow-x-auto max-h-[600px] table-scrollbar ${
+            isDialogOpen ? "overflow-y-hidden" : "overflow-y-auto"
+          }`}
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           <table className="min-w-full divide-y divide-gray-200 border border-gray-300">
@@ -224,8 +230,8 @@ function ClassList() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
-                    <div className="text-sm text-gray-900">
-                      {Nclass.Description || "N/A"}
+                    <div className="text-sm text-gray-900 text-center">
+                      {Nclass.Description || "-"}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
@@ -234,7 +240,9 @@ function ClassList() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
-                    <div className="text-sm text-gray-900">{Nclass.Notes}</div>
+                    <div className="text-sm text-gray-900 text-center">
+                      {Nclass.Notes || "-"}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="text-sm text-gray-900">
@@ -242,7 +250,7 @@ function ClassList() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
-                    <div className="text-sm text-gray-900">
+                    <div className="text-sm text-gray-900 text-center">
                       {Nclass.ClassDateTime
                         ? (() => {
                             const date = new Date(Nclass.ClassDateTime);
@@ -265,7 +273,7 @@ function ClassList() {
                               </>
                             );
                           })()
-                        : "N/A"}
+                        : "-"}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">

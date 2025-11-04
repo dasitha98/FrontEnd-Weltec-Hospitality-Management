@@ -139,8 +139,12 @@ function IngredientList() {
   return (
     <div className="p-14">
       <style jsx>{`
-        .hide-scrollbar::-webkit-scrollbar {
+        .table-scrollbar::-webkit-scrollbar {
           display: none;
+        }
+        .table-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
       {/* Header */}
@@ -178,10 +182,12 @@ function IngredientList() {
       {/* Ingredient Table */}
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
         <div
-          className="overflow-x-auto hide-scrollbar"
+          className={`overflow-x-auto max-h-[600px] table-scrollbar ${
+            isDialogOpen ? "overflow-y-hidden" : "overflow-y-auto"
+          }`}
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          <table className="min-w-full divide-y divide-gray-200 border border-gray-300">
+          <table className="min-w-full divide-y divide-gray-200 border border-gray-300 border-collapse">
             <thead className="bg-blue-950 sticky top-0 z-10">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider border-r border-blue-500">
@@ -230,8 +236,8 @@ function IngredientList() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
-                    <div className="text-sm text-gray-900">
-                      {ingredient?.Description}
+                    <div className="text-sm text-gray-900 text-center">
+                      {ingredient?.Description || "-"}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
@@ -324,7 +330,13 @@ function IngredientList() {
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="text-sm text-gray-400">&nbsp;</div>
                   </td>
-                  <td className="px-6 py-4 align-middle border-r border-gray-200">
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
+                    <div className="text-sm text-gray-400">&nbsp;</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
+                    <div className="text-sm text-gray-400">&nbsp;</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="text-sm text-gray-400">&nbsp;</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium align-middle">
