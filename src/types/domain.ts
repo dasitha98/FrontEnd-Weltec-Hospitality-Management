@@ -31,7 +31,7 @@ export interface User {
   Address: string;
   ContactNo: string;
   Password: string;
-  Role: "admin" | "instructor" | "student";
+  Role: "Tutor" | "Manager" | "Technician";
   IsActive: boolean;
   CreatedAt?: string;
   UpdatedAt?: string;

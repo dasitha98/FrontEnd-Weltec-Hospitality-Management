@@ -247,25 +247,74 @@ export default function PDFClient({
           <Page size="A4" style={styles.page}>
             <Text style={styles.title}>Inventory Report by Storage Type</Text>
             {pdfClassNames.length > 0 && (
-              <View style={{ marginBottom: 15 }}>
-                <Text
+              <View
+                style={{
+                  marginBottom: 15,
+                  padding: 12,
+                  backgroundColor: "#ffffff",
+                  borderRadius: 6,
+                  borderWidth: 1,
+                  borderColor: "#e5e7eb",
+                }}
+              >
+                <View
                   style={{
-                    fontSize: 12,
-                    fontWeight: "bold",
-                    marginBottom: 5,
-                    color: "#374151",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    flexWrap: "wrap",
                   }}
                 >
-                  Classes:
-                </Text>
-                <Text style={{ fontSize: 11, color: "#6B7280" }}>
-                  {pdfClassNames.join(", ")}
-                </Text>
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      fontWeight: "bold",
+                      color: "#1E3A8A",
+                      marginRight: 8,
+                    }}
+                  >
+                    Classes:
+                  </Text>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    {pdfClassNames.map((name, index) => (
+                      <View
+                        key={index}
+                        style={{
+                          paddingHorizontal: 10,
+                          paddingVertical: 4,
+                          backgroundColor: "#EFF6FF",
+                          borderWidth: 1,
+                          borderColor: "#DBEAFE",
+                          borderRadius: 12,
+                          marginRight: index < pdfClassNames.length - 1 ? 6 : 0,
+                          marginBottom: 4,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontSize: 10,
+                            fontWeight: "500",
+                            color: "#1E3A8A",
+                          }}
+                        >
+                          {name}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
               </View>
             )}
             {renderStorageTable("Dry Storage", storageData["Dry Storage"])}
             {renderStorageTable("Chill Storage", storageData["Chill Storage"])}
-            {renderStorageTable("Oven Storage", storageData["Oven Storage"])}
+            {renderStorageTable(
+              "Frozen Storage",
+              storageData["Frozen Storage"]
+            )}
           </Page>
         </Document>
       );
@@ -617,7 +666,7 @@ export default function PDFClient({
           <>
             {renderTable("Dry Storage", storageData["Dry Storage"])}
             {renderTable("Chill Storage", storageData["Chill Storage"])}
-            {renderTable("Oven Storage", storageData["Oven Storage"])}
+            {renderTable("Frozen Storage", storageData["Frozen Storage"])}
 
             <div style={{ marginTop: "32px", display: "flex", gap: "12px" }}>
               <button

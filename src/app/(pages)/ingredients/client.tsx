@@ -3,6 +3,8 @@
 import StoreProvider from "@/store/providers";
 import type { RootState } from "@/store";
 import { useEffect, useState } from "react";
+import Cookies from "js-cookie";
+import { getUserInfoFromToken } from "@/utils/jwt";
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaBuilding } from "react-icons/fa";
 import {
   useDeleteIngredientMutation,
@@ -36,6 +38,16 @@ function IngredientList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
+  const [isTutorRole, setIsTutorRole] = useState(false);
+
+  useEffect(() => {
+    // Check user role from accessToken
+    const token = Cookies.get("accessToken");
+    if (token) {
+      const userInfo = getUserInfoFromToken(token);
+      setIsTutorRole(userInfo?.role === "Tutor");
+    }
+  }, []);
 
   const handleSubmit = (data: Omit<Ingredient, "IngredientId">) => {
     if (editingIngredient) {
@@ -264,7 +276,7 @@ function IngredientList() {
                       </div>
                     </div>
                   </td>
-                  
+
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium align-middle">
                     <div className="flex space-x-2">
                       <button
@@ -276,7 +288,8 @@ function IngredientList() {
                       </button>
                       <button
                         onClick={() => handleDelete(ingredient.IngredientId)}
-                        className="text-red-600 hover:text-red-900"
+                        disabled={isTutorRole}
+                        className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-red-600"
                         title="Delete ingredient"
                       >
                         <FaTrash size={16} />
@@ -325,19 +338,6 @@ function IngredientList() {
             </tbody>
           </table>
         </div>
-
-        {currentIngredients.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-gray-500 text-lg mb-2">
-              No ingredients found
-            </div>
-            <p className="text-gray-400">
-              {searchTerm
-                ? "Try adjusting your search terms"
-                : "Add your first ingredient to get started"}
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Pagination */}

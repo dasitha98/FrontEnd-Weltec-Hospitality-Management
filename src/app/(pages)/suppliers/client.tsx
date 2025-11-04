@@ -6,7 +6,9 @@ import {
 } from "@/store/api/supplier.api";
 import StoreProvider from "@/store/providers";
 import type { RootState } from "@/store";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Cookies from "js-cookie";
+import { getUserInfoFromToken } from "@/utils/jwt";
 import {
   FaPlus,
   FaEdit,
@@ -43,6 +45,16 @@ function SupplierList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
+  const [isTutorRole, setIsTutorRole] = useState(false);
+
+  useEffect(() => {
+    // Check user role from accessToken
+    const token = Cookies.get("accessToken");
+    if (token) {
+      const userInfo = getUserInfoFromToken(token);
+      setIsTutorRole(userInfo?.role === "Tutor");
+    }
+  }, []);
 
   const handleSubmit = (data: Omit<Supplier, "SupplierId">) => {
     if (editingSupplier) {
@@ -256,7 +268,8 @@ function SupplierList() {
                       </button>
                       <button
                         onClick={() => handleDelete(supplier.SupplierId)}
-                        className="text-red-600 hover:text-red-900"
+                        disabled={isTutorRole}
+                        className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-red-600"
                         title="Delete supplier"
                       >
                         <FaTrash size={16} />
@@ -305,17 +318,6 @@ function SupplierList() {
             </tbody>
           </table>
         </div>
-
-        {currentSuppliers.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-gray-500 text-lg mb-2">No suppliers found</div>
-            <p className="text-gray-400">
-              {searchTerm
-                ? "Try adjusting your search terms"
-                : "Add your first supplier to get started"}
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Pagination */}

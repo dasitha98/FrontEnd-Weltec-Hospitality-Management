@@ -8,6 +8,8 @@ import { useListSupplierQuery } from "@/store/api/supplier.api";
 import { Ingredient } from "@/types/domain";
 import React, { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
+import Cookies from "js-cookie";
+import { getUserInfoFromToken } from "@/utils/jwt";
 
 interface AddIngredientFormProps {
   onSubmit: (data: Omit<Ingredient, "IngredientId">) => void;
@@ -45,7 +47,7 @@ interface FormErrors {
 const STORE_OPTIONS = [
   { value: "Dry Storage", label: "Dry Storage" },
   { value: "Chill Storage", label: "Chill Storage" },
-  { value: "Oven Storage", label: "Oven Storage" },
+  { value: "Frozen Storage", label: "Frozen Storage" },
 ];
 
 const UNIT_OPTIONS = [
@@ -97,6 +99,16 @@ export default function AddIngredientForm({
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
+  const [isTutorRole, setIsTutorRole] = useState(false);
+
+  useEffect(() => {
+    // Check user role from accessToken
+    const token = Cookies.get("accessToken");
+    if (token) {
+      const userInfo = getUserInfoFromToken(token);
+      setIsTutorRole(userInfo?.role === "Tutor");
+    }
+  }, []);
 
   // Initialize form data when initialData changes
   useEffect(() => {
@@ -565,7 +577,8 @@ export default function AddIngredientForm({
           </button>
           <button
             type="submit"
-            className="px-4 py-2 text-sm font-medium text-white bg-blue-950 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-sm"
+            disabled={isTutorRole}
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-950 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {submitButtonText}
           </button>

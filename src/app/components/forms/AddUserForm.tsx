@@ -16,6 +16,8 @@ import {
   useUpdateAuthMutation,
 } from "@/store/api/auth.api";
 import type { Auth } from "@/types/domain";
+import Cookies from "js-cookie";
+import { getUserInfoFromToken } from "@/utils/jwt";
 
 interface AddUserFormProps {
   onSubmit: (data: Omit<Auth, "UserId">) => void;
@@ -51,11 +53,21 @@ export default function AddUserForm({
     Email: "",
     ContactNumber: "",
     Password: "",
-    Role: "student",
+    Role: "Tutor",
     Status: "Active",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isTutorRole, setIsTutorRole] = useState(false);
+
+  useEffect(() => {
+    // Check user role from accessToken
+    const token = Cookies.get("accessToken");
+    if (token) {
+      const userInfo = getUserInfoFromToken(token);
+      setIsTutorRole(userInfo?.role === "Tutor");
+    }
+  }, []);
 
   useEffect(() => {
     if (initialData) {
@@ -64,7 +76,7 @@ export default function AddUserForm({
         Email: initialData.Email || "",
         ContactNumber: initialData.ContactNumber?.toString() || "",
         Password: "", // Don't pre-fill password for security
-        Role: initialData.Role || "student",
+        Role: initialData.Role || "Tutor",
         Status: initialData.Status || "Active",
       });
     }
@@ -92,8 +104,9 @@ export default function AddUserForm({
     if (!formData.ContactNumber.trim()) {
       newErrors.ContactNumber = "Contact number is required";
     } else {
-      const cleanedNumber = formData.ContactNumber.replace(/[\s\-\(\)]/g, "");
-      if (!/^[\+]?[1-9][\d]{0,15}$/.test(cleanedNumber)) {
+      // Allow any numbers - just check that it contains at least one digit
+      const hasDigits = /\d/.test(formData.ContactNumber);
+      if (!hasDigits) {
         newErrors.ContactNumber = "Please enter a valid contact number";
       }
     }
@@ -111,8 +124,12 @@ export default function AddUserForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      const cleanedNumber = formData.ContactNumber.replace(/[\s\-\(\)]/g, "");
-      const contactNumber = parseFloat(cleanedNumber);
+      // Clean the number by removing spaces, hyphens, parentheses, and plus signs
+      // Then convert to number, allowing leading zeros by using the cleaned string
+      const cleanedNumber = formData.ContactNumber.replace(/[\s\-\(\)\+]/g, "");
+      // Try to parse as number, but if it's a valid string with digits, use it
+      const contactNumber =
+        cleanedNumber.length > 0 ? parseFloat(cleanedNumber) : NaN;
 
       const submitData = {
         Name: formData.Name || undefined,
@@ -268,9 +285,9 @@ export default function AddUserForm({
               onChange={(e) => handleInputChange("Role", e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="student">Student</option>
-              <option value="instructor">Instructor</option>
-              <option value="admin">Admin</option>
+              <option value="Tutor">Tutor</option>
+              <option value="Manager">Manager</option>
+              <option value="Technician">Technician</option>
             </select>
           </div>
 
@@ -318,7 +335,7 @@ export default function AddUserForm({
           </button>
           <button
             type="submit"
-            disabled={isLoading || isCreating}
+            disabled={isLoading || isCreating || isTutorRole}
             className="px-6 py-2 bg-blue-950 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading || isCreating ? "Saving..." : submitButtonText}

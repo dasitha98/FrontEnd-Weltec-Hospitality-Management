@@ -8,7 +8,7 @@ export interface ListReportParams {
 export interface StorageData {
   "Dry Storage": IngredientData[];
   "Chill Storage": IngredientData[];
-  "Oven Storage": IngredientData[];
+  "Frozen Storage": IngredientData[];
 }
 
 export interface IngredientData {

@@ -52,11 +52,11 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    
+
     // Check if this is a ClassIds request (for listing reports)
     if (body.ClassIds && Array.isArray(body.ClassIds)) {
       console.log("➡️ API hit: POST /api/reports with ClassIds", body.ClassIds);
-      
+
       // Mock StorageData based on ClassIds
       // In a real implementation, this would query the database based on ClassIds
       const storageData = {
@@ -76,13 +76,13 @@ export async function POST(request: Request) {
             Store: "Dry Storage",
           },
         ],
-        "Oven Storage": [
+        "Frozen Storage": [
           {
             IngredientName: "ingredient_3",
             Quantity: 20.0,
             Unit: "g",
             Cost: 30.0,
-            Store: "Oven Storage",
+            Store: "Frozen Storage",
           },
         ],
         "Chill Storage": [
@@ -95,10 +95,10 @@ export async function POST(request: Request) {
           },
         ],
       };
-      
+
       return NextResponse.json(storageData);
     }
-    
+
     // Otherwise, create a new report (existing behavior)
     const newReport: Omit<Report, "ReportId"> = body;
 
