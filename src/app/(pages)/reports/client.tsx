@@ -182,7 +182,13 @@ export default function ReportClient({
               </div>
 
               {/* Generate PDF Button - inside the selected classes section */}
-              <div style={{ marginTop: "12px" }}>
+              <div
+                style={{
+                  marginTop: "12px",
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+              >
                 <button
                   type="button"
                   onClick={handleGeneratePDF}
@@ -196,7 +202,6 @@ export default function ReportClient({
                     borderRadius: "6px",
                     cursor: "pointer",
                     transition: "background-color 0.2s",
-                    width: "100%",
                   }}
                   onMouseOver={(e) => {
                     e.currentTarget.style.backgroundColor = "#1e40af";
