@@ -43,7 +43,7 @@ interface FormErrors {
 }
 
 const STORE_OPTIONS = [
-  { value: "Dry Store", label: "Dry Store" },
+  { value: "Dry Storage", label: "Dry Storage" },
   { value: "Chill Storage", label: "Chill Storage" },
   { value: "Oven Storage", label: "Oven Storage" },
 ];

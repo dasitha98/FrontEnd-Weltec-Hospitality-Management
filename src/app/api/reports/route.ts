@@ -51,7 +51,56 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const newReport: Omit<Report, "ReportId"> = await request.json();
+    const body = await request.json();
+    
+    // Check if this is a ClassIds request (for listing reports)
+    if (body.ClassIds && Array.isArray(body.ClassIds)) {
+      console.log("➡️ API hit: POST /api/reports with ClassIds", body.ClassIds);
+      
+      // Mock StorageData based on ClassIds
+      // In a real implementation, this would query the database based on ClassIds
+      const storageData = {
+        "Dry Storage": [
+          {
+            IngredientName: "ingredient_1",
+            Quantity: 10.0,
+            Unit: "g",
+            Cost: 2.0,
+            Store: "Dry Storage",
+          },
+          {
+            IngredientName: "ingredient_1",
+            Quantity: 15.0,
+            Unit: "g",
+            Cost: 2.0,
+            Store: "Dry Storage",
+          },
+        ],
+        "Oven Storage": [
+          {
+            IngredientName: "ingredient_3",
+            Quantity: 20.0,
+            Unit: "g",
+            Cost: 30.0,
+            Store: "Oven Storage",
+          },
+        ],
+        "Chill Storage": [
+          {
+            IngredientName: "ingredient_2",
+            Quantity: 10.0,
+            Unit: "g",
+            Cost: 20.0,
+            Store: "Chill Storage",
+          },
+        ],
+      };
+      
+      return NextResponse.json(storageData);
+    }
+    
+    // Otherwise, create a new report (existing behavior)
+    const newReport: Omit<Report, "ReportId"> = body;
 
     const report: Report = {
       ...newReport,
@@ -61,7 +110,7 @@ export async function POST(request: Request) {
       UpdatedAt: new Date().toISOString(),
     };
 
-    console.log("➡️ API hit: POST /api/reports", report);
+    console.log("➡️ API hit: POST /api/reports (create)", report);
     return NextResponse.json(report, { status: 201 });
   } catch (error) {
     console.error("❌ API error in POST /api/reports:", error);

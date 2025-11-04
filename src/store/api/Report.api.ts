@@ -1,11 +1,31 @@
 import { apiBase } from "./baseApi";
 import type { Report, ID } from "@/types/domain";
 
+export interface ListReportParams {
+  ClassIds: string[];
+}
+
+export interface StorageData {
+  "Dry Storage": IngredientData[];
+  "Chill Storage": IngredientData[];
+  "Oven Storage": IngredientData[];
+}
+
+export interface IngredientData {
+  IngredientName: string;
+  Quantity: number;
+  Unit: string;
+  Cost: number;
+  Store: string;
+}
+
 export const reportApi = apiBase.injectEndpoints({
   endpoints: (b) => ({
-    listReport: b.query<Report[], void>({
-      query: () => ({
+    listReport: b.query<StorageData, ListReportParams>({
+      query: (params) => ({
         url: "/reports",
+        method: "POST",
+        body: params,
       }),
       providesTags: ["Report"],
     }),
