@@ -230,13 +230,6 @@ function LoginForm() {
             </button>
           </form>
 
-          {/* Demo Credentials Hint */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-xs text-gray-500 text-center">
-              Demo credentials: Use any email from the user list with password
-              "password123"
-            </p>
-          </div>
         </div>
 
         {/* Footer */}
