@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
     domains: ['example.com'],  // Specify allowed image domains
   },
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "https://api.example.com",  // Public environment variables
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,  // Public environment variables
   },
 };
 
