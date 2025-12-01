@@ -30,6 +30,15 @@ function IngredientList() {
   const [deleteIngredient, { isSuccess, isError, error }] =
     useDeleteIngredientMutation();
 
+  // Helper function to format cost with up to 3 decimal places, removing trailing zeros
+  const formatCost = (value: number | string | undefined | null): string => {
+    if (value === undefined || value === null || value === "") return "0";
+    const numValue = Number(value);
+    if (isNaN(numValue)) return "0";
+    // Format to 3 decimal places and remove trailing zeros
+    return numValue.toFixed(3).replace(/\.?0+$/, "");
+  };
+
   const [ingredient, setIngredient] = useState<Ingredient[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(
@@ -264,7 +273,7 @@ function IngredientList() {
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="flex items-center">
                       <div className="text-sm text-gray-900">
-                        ${ingredient.PurchaseCost}
+                        ${formatCost(ingredient.PurchaseCost)}
                       </div>
                     </div>
                   </td>
@@ -278,7 +287,7 @@ function IngredientList() {
                   <td className="px-6 py-4 whitespace-nowrap align-middle border-r border-gray-200">
                     <div className="flex items-center">
                       <div className="text-sm text-gray-900">
-                        ${ingredient.UsageCost}
+                        ${formatCost(ingredient.UsageCost)}
                       </div>
                     </div>
                   </td>

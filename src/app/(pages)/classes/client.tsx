@@ -297,7 +297,7 @@ function ClassList() {
                           },
                           0
                         );
-                        return `$${total.toFixed(2)}`;
+                        return `$${total.toFixed(3)}`;
                       })()}
                     </div>
                   </td>

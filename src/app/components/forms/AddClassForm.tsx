@@ -163,7 +163,7 @@ export default function AddClassForm({
                 noOfStudents: "",
                 reference: classRecipe.RReference || "",
                 unitCost: unitCost ? unitCost.toString() : "",
-                totalCost: totalCost ? totalCost.toFixed(2) : "",
+                totalCost: totalCost ? totalCost.toFixed(3) : "",
               };
             })
           : [];
@@ -206,12 +206,12 @@ export default function AddClassForm({
           ) {
             return {
               ...recipe,
-              totalCost: (unitCost * noOfStudents).toFixed(2),
+              totalCost: (unitCost * noOfStudents).toFixed(3),
             };
           } else if (!isNaN(unitCost) && unitCost >= 0) {
             return {
               ...recipe,
-              totalCost: unitCost.toFixed(2),
+              totalCost: unitCost.toFixed(3),
             };
           }
           return recipe;
@@ -230,12 +230,12 @@ export default function AddClassForm({
           ) {
             return {
               ...recipe,
-              totalCost: (unitCost * noOfStudents).toFixed(2),
+              totalCost: (unitCost * noOfStudents).toFixed(3),
             };
           } else if (!isNaN(unitCost) && unitCost >= 0) {
             return {
               ...recipe,
-              totalCost: unitCost.toFixed(2),
+              totalCost: unitCost.toFixed(3),
             };
           }
           return recipe;
@@ -332,10 +332,10 @@ export default function AddClassForm({
               noOfStudents > 0
             ) {
               // Total Cost = Unit Cost * No of Students
-              updatedRecipe.totalCost = (unitCost * noOfStudents).toFixed(2);
+              updatedRecipe.totalCost = (unitCost * noOfStudents).toFixed(3);
             } else if (!isNaN(unitCost) && unitCost >= 0) {
               // If no students value, just use unit cost
-              updatedRecipe.totalCost = unitCost.toFixed(2);
+              updatedRecipe.totalCost = unitCost.toFixed(3);
             } else {
               updatedRecipe.totalCost = "";
             }
@@ -390,10 +390,10 @@ export default function AddClassForm({
                 noOfStudents > 0
               ) {
                 // Total Cost = Unit Cost * No of Students
-                updatedRecipe.totalCost = (unitCost * noOfStudents).toFixed(2);
+                updatedRecipe.totalCost = (unitCost * noOfStudents).toFixed(3);
               } else if (!isNaN(unitCost) && unitCost >= 0) {
                 // If no students value, just use unit cost
-                updatedRecipe.totalCost = unitCost.toFixed(2);
+                updatedRecipe.totalCost = unitCost.toFixed(3);
               } else {
                 updatedRecipe.totalCost = "";
               }
@@ -1006,7 +1006,7 @@ export default function AddClassForm({
                                   type="number"
                                   placeholder="Unit Cost"
                                   min="0"
-                                  step="0.01"
+                                  step="0.001"
                                   value={data.unitCost}
                                   onChange={(e) =>
                                     isEditing
@@ -1117,7 +1117,7 @@ export default function AddClassForm({
                 </label>
                 <input
                   type="text"
-                  value={`$${getTotalCost().toFixed(2)}`}
+                  value={`$${getTotalCost().toFixed(3)}`}
                   readOnly
                   className="px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-700"
                 />

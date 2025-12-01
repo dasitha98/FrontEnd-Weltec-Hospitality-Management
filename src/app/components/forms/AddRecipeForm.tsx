@@ -75,13 +75,6 @@ const UNIT_OPTIONS = [
   { value: "g", label: "Grams (g)" },
   { value: "liters", label: "Liters (L)" },
   { value: "ml", label: "Milliliters (ml)" },
-  { value: "cups", label: "Cups" },
-  { value: "tbsp", label: "Tablespoons" },
-  { value: "tsp", label: "Teaspoons" },
-  { value: "pieces", label: "Pieces" },
-  { value: "slices", label: "Slices" },
-  { value: "pinch", label: "Pinch" },
-  { value: "dash", label: "Dash" },
 ];
 
 export default function AddRecipeForm({
@@ -655,7 +648,7 @@ export default function AddRecipeForm({
           return sum + quantity * cost;
         }, 0);
 
-        totalCost = (savedCost + editingCost).toFixed(2);
+        totalCost = (savedCost + editingCost).toFixed(3);
       }
 
       const updated = {
@@ -1157,7 +1150,7 @@ export default function AddRecipeForm({
                                   type="number"
                                   placeholder="Cost"
                                   min="0"
-                                  step="0.01"
+                                  step="0.001"
                                   value={
                                     (typeof data.Cost === "string" &&
                                       data.Cost === "") ||
@@ -1295,7 +1288,7 @@ export default function AddRecipeForm({
                 </label>
                 <input
                   type="text"
-                  value={`$${calculateTotalCost().toFixed(2)}`}
+                  value={`$${calculateTotalCost().toFixed(3)}`}
                   readOnly
                   className="px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-700"
                 />

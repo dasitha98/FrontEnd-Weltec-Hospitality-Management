@@ -10,6 +10,12 @@ import React, { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
 import Cookies from "js-cookie";
 import { getUserInfoFromToken } from "@/utils/jwt";
+import {
+  convert,
+  isWeightUnit,
+  isVolumeUnit,
+  getUnitType,
+} from "@/utils/unitConverter";
 
 interface AddIngredientFormProps {
   onSubmit: (data: Omit<Ingredient, "IngredientId">) => void;
@@ -55,12 +61,6 @@ const UNIT_OPTIONS = [
   { value: "g", label: "Grams (g)" },
   { value: "liters", label: "Liters (L)" },
   { value: "ml", label: "Milliliters (ml)" },
-  { value: "pieces", label: "Pieces" },
-  { value: "cups", label: "Cups" },
-  { value: "tbsp", label: "Tablespoons" },
-  { value: "tsp", label: "Teaspoons" },
-  { value: "boxes", label: "Boxes" },
-  { value: "bags", label: "Bags" },
 ];
 
 export default function AddIngredientForm({
@@ -121,8 +121,15 @@ export default function AddIngredientForm({
         PurchaseQuantity: initialData.PurchaseQuantity ?? "",
         PurchaseUnit: initialData.PurchaseUnit || "",
         UsageUnit: initialData.UsageUnit || "",
-        PurchaseCost: initialData.PurchaseCost ?? "",
-        UsageCost: initialData.UsageCost ?? "",
+        PurchaseCost:
+          initialData.PurchaseCost !== undefined &&
+          initialData.PurchaseCost !== null
+            ? Number(initialData.PurchaseCost).toFixed(3)
+            : "",
+        UsageCost:
+          initialData.UsageCost !== undefined && initialData.UsageCost !== null
+            ? Number(initialData.UsageCost).toFixed(3)
+            : "",
       });
     }
   }, [initialData]);
@@ -132,6 +139,100 @@ export default function AddIngredientForm({
       onCancel();
     }
   }, [updateSuccess, createSuccess]);
+
+  // Auto-update Usage Unit when Purchase Unit changes to ensure same unit type
+  useEffect(() => {
+    const purchaseUnit = formData.PurchaseUnit;
+    const usageUnit = formData.UsageUnit;
+
+    if (purchaseUnit) {
+      // Normalize "liters" to "L" for type checking
+      const normalizedPurchaseUnit =
+        purchaseUnit === "liters" ? "L" : purchaseUnit;
+      const normalizedUsageUnit = usageUnit === "liters" ? "L" : usageUnit;
+
+      // Get unit types
+      const purchaseUnitType = getUnitType(normalizedPurchaseUnit);
+      const usageUnitType = getUnitType(normalizedUsageUnit);
+
+      // If Usage Unit is set but different type, reset it
+      if (
+        usageUnit &&
+        purchaseUnitType !== "unknown" &&
+        usageUnitType !== "unknown"
+      ) {
+        if (purchaseUnitType !== usageUnitType) {
+          // Reset Usage Unit and Usage Cost when types don't match
+          setFormData((prev) => ({
+            ...prev,
+            UsageUnit: "",
+            UsageCost: "",
+          }));
+        }
+      }
+    }
+  }, [formData.PurchaseUnit]);
+
+  // Auto-calculate Usage Cost when Purchase Cost, Purchase Quantity, Purchase Unit, or Usage Unit changes
+  useEffect(() => {
+    const purchaseCost = Number(formData.PurchaseCost);
+    const purchaseQuantity = Number(formData.PurchaseQuantity);
+    const purchaseUnit = formData.PurchaseUnit;
+    const usageUnit = formData.UsageUnit;
+
+    // Normalize "liters" to "L" for type checking and conversion
+    const normalizedPurchaseUnit =
+      purchaseUnit === "liters" ? "L" : purchaseUnit;
+    const normalizedUsageUnit = usageUnit === "liters" ? "L" : usageUnit;
+
+    // Only calculate if all required fields are valid
+    if (
+      purchaseCost > 0 &&
+      purchaseQuantity > 0 &&
+      purchaseUnit &&
+      usageUnit &&
+      (isWeightUnit(normalizedPurchaseUnit) ||
+        isVolumeUnit(normalizedPurchaseUnit)) &&
+      (isWeightUnit(normalizedUsageUnit) || isVolumeUnit(normalizedUsageUnit))
+    ) {
+      try {
+        // Calculate cost per purchase unit
+        const costPerPurchaseUnit = purchaseCost / purchaseQuantity;
+
+        // Convert 1 purchase unit to usage unit to get the conversion factor
+        const onePurchaseUnitInUsageUnit = convert(
+          1,
+          normalizedPurchaseUnit as "kg" | "g" | "L" | "ml",
+          normalizedUsageUnit as "kg" | "g" | "L" | "ml"
+        );
+
+        // Calculate usage cost: cost per purchase unit divided by how many usage units are in 1 purchase unit
+        const usageCost =
+          costPerPurchaseUnit / onePurchaseUnitInUsageUnit.value;
+
+        // Update Usage Cost (round to 3 decimal places)
+        setFormData((prev) => ({
+          ...prev,
+          UsageCost: usageCost.toFixed(3),
+        }));
+
+        // Clear any existing Usage Cost error
+        setErrors((prev) => ({
+          ...prev,
+          UsageCost: undefined,
+        }));
+      } catch (error) {
+        // If conversion fails (e.g., different unit types), don't update Usage Cost
+        // User will need to manually enter it or fix the units
+        console.error("Error calculating usage cost:", error);
+      }
+    }
+  }, [
+    formData.PurchaseCost,
+    formData.PurchaseQuantity,
+    formData.PurchaseUnit,
+    formData.UsageUnit,
+  ]);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     // Handle numeric fields - store as number but validate
@@ -150,21 +251,23 @@ export default function AddIngredientForm({
         ...prev,
         [field]: undefined,
       }));
+      // Keep cost fields as string while typing for better UX
+      processedValue = value;
     } else {
       // Clear error for other fields when user starts typing
       setErrors((prev) => ({
         ...prev,
         [field]: undefined,
       }));
-    }
 
-    if (numericFields.includes(field)) {
-      // Allow empty string for better UX while typing
-      if (value === "" || value === undefined || value === null) {
-        processedValue = "";
-      } else {
-        const numValue = parseFloat(value);
-        processedValue = isNaN(numValue) ? "" : numValue;
+      if (field === "PurchaseQuantity") {
+        // Allow empty string for better UX while typing
+        if (value === "" || value === undefined || value === null) {
+          processedValue = "";
+        } else {
+          const numValue = parseFloat(value);
+          processedValue = isNaN(numValue) ? "" : numValue;
+        }
       }
     }
 
@@ -204,35 +307,50 @@ export default function AddIngredientForm({
     }
 
     if (!formData.UsageUnit) {
-      newErrors.UsageUnit = "Usage Unit is required";
+      newErrors.UsageUnit = "Cost per Unit is required";
+    } else if (formData.PurchaseUnit) {
+      // Validate that Usage Unit is the same type as Purchase Unit
+      const normalizedPurchaseUnit =
+        formData.PurchaseUnit === "liters" ? "L" : formData.PurchaseUnit;
+      const normalizedUsageUnit =
+        formData.UsageUnit === "liters" ? "L" : formData.UsageUnit;
+
+      const purchaseUnitType = getUnitType(normalizedPurchaseUnit);
+      const usageUnitType = getUnitType(normalizedUsageUnit);
+
+      if (
+        purchaseUnitType !== "unknown" &&
+        usageUnitType !== "unknown" &&
+        purchaseUnitType !== usageUnitType
+      ) {
+        newErrors.UsageUnit = `Cost per Unit must be the same type as Purchase Unit (${purchaseUnitType})`;
+      }
     }
 
     // Cost field validations
     if (
       formData.PurchaseCost === undefined ||
       formData.PurchaseCost === null ||
-      formData.PurchaseCost === "" ||
-      formData.PurchaseCost === 0
+      formData.PurchaseCost === ""
     ) {
       newErrors.PurchaseCost = "Purchase Cost is required";
     } else {
       const purchaseCost = Number(formData.PurchaseCost);
-      if (isNaN(purchaseCost) || purchaseCost < 0) {
-        newErrors.PurchaseCost = "Purchase Cost must be a non-negative number";
+      if (isNaN(purchaseCost) || purchaseCost <= 0) {
+        newErrors.PurchaseCost = "Purchase Cost must be a positive number";
       }
     }
 
     if (
       formData.UsageCost === undefined ||
       formData.UsageCost === null ||
-      formData.UsageCost === "" ||
-      formData.UsageCost === 0
+      formData.UsageCost === ""
     ) {
       newErrors.UsageCost = "Usage Cost is required";
     } else {
       const usageCost = Number(formData.UsageCost);
-      if (isNaN(usageCost) || usageCost < 0) {
-        newErrors.UsageCost = "Usage Cost must be a non-negative number";
+      if (isNaN(usageCost) || usageCost <= 0) {
+        newErrors.UsageCost = "Usage Cost must be a positive number";
       }
     }
 
@@ -279,6 +397,36 @@ export default function AddIngredientForm({
   const handleCancel = () => {
     handleReset();
     onCancel();
+  };
+
+  // Get available units for Usage Unit based on Purchase Unit type
+  const getAvailableUsageUnits = () => {
+    const purchaseUnit = formData.PurchaseUnit;
+    if (!purchaseUnit) {
+      return UNIT_OPTIONS;
+    }
+
+    // Normalize "liters" to "L" for type checking
+    const normalizedPurchaseUnit =
+      purchaseUnit === "liters" ? "L" : purchaseUnit;
+    const unitType = getUnitType(normalizedPurchaseUnit);
+
+    if (unitType === "weight") {
+      // Return only weight units
+      return UNIT_OPTIONS.filter((option) => {
+        const normalized = option.value === "liters" ? "L" : option.value;
+        return isWeightUnit(normalized);
+      });
+    } else if (unitType === "volume") {
+      // Return only volume units
+      return UNIT_OPTIONS.filter((option) => {
+        const normalized = option.value === "liters" ? "L" : option.value;
+        return isVolumeUnit(normalized);
+      });
+    }
+
+    // If unit type is unknown, return all options
+    return UNIT_OPTIONS;
   };
 
   return (
@@ -399,7 +547,7 @@ export default function AddIngredientForm({
           </div>
         </div>
 
-        {/* Purchase Qty, Purchase Unit, Usage Unit Row */}
+        {/* Purchase Qty, Purchase Unit, Cost per UnitRow */}
         <div className="bg-gray-50 rounded-md p-3">
           <h3 className="text-sm font-medium text-gray-700 mb-3">
             Quantity & Units
@@ -477,20 +625,32 @@ export default function AddIngredientForm({
                 htmlFor="usageUnit"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                Usage Unit <span className="text-red-500">*</span>
+                Usage Unit<span className="text-red-500">*</span>
               </label>
               <select
                 id="usageUnit"
                 value={formData.UsageUnit}
                 onChange={(e) => handleInputChange("UsageUnit", e.target.value)}
+                disabled={!formData.PurchaseUnit}
                 className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
                   errors.UsageUnit
                     ? "border-red-500 bg-red-50"
-                    : "border-gray-300 hover:border-gray-400"
+                    : formData.PurchaseUnit
+                    ? "border-gray-300 hover:border-gray-400"
+                    : "border-gray-300 bg-gray-100 cursor-not-allowed"
                 }`}
+                title={
+                  !formData.PurchaseUnit
+                    ? "Please select Purchase Unit first"
+                    : "Cost Per Unit must be the same type as Purchase Unit"
+                }
               >
-                <option value="">Select Unit</option>
-                {UNIT_OPTIONS.map((option) => (
+                <option value="">
+                  {formData.PurchaseUnit
+                    ? "Select Unit"
+                    : "Select Purchase Unit first"}
+                </option>
+                {getAvailableUsageUnits().map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
@@ -519,20 +679,36 @@ export default function AddIngredientForm({
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <span className="text-gray-500 text-sm font-medium">$</span>
+                  <span className="text-gray-500 text-sm font-medium ml-1">
+                    &nbsp;
+                  </span>
                 </div>
                 <input
                   id="purchaseCost"
                   type="number"
-                  step="0.01"
+                  step="0.001"
                   min="0"
                   value={
-                    formData.PurchaseCost === "" ? "" : formData.PurchaseCost
+                    formData.PurchaseCost === ""
+                      ? ""
+                      : typeof formData.PurchaseCost === "number"
+                      ? formData.PurchaseCost.toFixed(3)
+                      : String(formData.PurchaseCost)
                   }
                   onChange={(e) =>
                     handleInputChange("PurchaseCost", e.target.value)
                   }
-                  placeholder="0.00"
-                  className={`w-full pl-8 pr-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                  onBlur={(e) => {
+                    const value = e.target.value.trim();
+                    if (value === "") {
+                      handleInputChange("PurchaseCost", "");
+                    } else if (!isNaN(parseFloat(value))) {
+                      const numValue = parseFloat(value);
+                      handleInputChange("PurchaseCost", numValue.toFixed(3));
+                    }
+                  }}
+                  placeholder="0.000"
+                  className={`w-full pl-10 pr-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
                     errors.PurchaseCost
                       ? "border-red-500 bg-red-50"
                       : "border-gray-300 hover:border-gray-400"
@@ -556,22 +732,42 @@ export default function AddIngredientForm({
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <span className="text-gray-500 text-sm font-medium">$</span>
+                  <span className="text-gray-500 text-sm font-medium ml-1">
+                    &nbsp;
+                  </span>
                 </div>
                 <input
                   id="usageCost"
                   type="number"
-                  step="0.01"
+                  step="0.001"
                   min="0"
-                  value={formData.UsageCost === "" ? "" : formData.UsageCost}
+                  value={
+                    formData.UsageCost === ""
+                      ? ""
+                      : typeof formData.UsageCost === "number"
+                      ? formData.UsageCost.toFixed(3)
+                      : String(formData.UsageCost)
+                  }
                   onChange={(e) =>
                     handleInputChange("UsageCost", e.target.value)
                   }
-                  placeholder="0.00"
-                  className={`w-full pl-8 pr-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                  onBlur={(e) => {
+                    const value = e.target.value.trim();
+                    if (value === "") {
+                      handleInputChange("UsageCost", "");
+                    } else if (!isNaN(parseFloat(value))) {
+                      const numValue = parseFloat(value);
+                      handleInputChange("UsageCost", numValue.toFixed(3));
+                    }
+                  }}
+                  placeholder="0.000"
+                  readOnly
+                  className={`w-full pl-10 pr-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-gray-50 cursor-not-allowed ${
                     errors.UsageCost
                       ? "border-red-500 bg-red-50"
-                      : "border-gray-300 hover:border-gray-400"
+                      : "border-gray-300"
                   }`}
+                  title="Usage Cost is automatically calculated based on Purchase Cost, Purchase Quantity, and unit conversion"
                 />
               </div>
               {errors.UsageCost && (
